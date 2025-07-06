@@ -4,18 +4,15 @@ module Sashite
   module Snn
     # Represents a style in SNN (Style Name Notation) format.
     #
-    # A style consists of an alphanumeric identifier with case-based side encoding:
-    # - Uppercase identifier: first player (CHESS, SHOGI, XIANGQI)
-    # - Lowercase identifier: second player (chess, shogi, xiangqi)
+    # A style consists of a single ASCII letter with case-based side encoding:
+    # - Uppercase letter: first player (A, B, C, ..., Z)
+    # - Lowercase letter: second player (a, b, c, ..., z)
     #
     # All instances are immutable - transformation methods return new instances.
-    # This follows the Game Protocol's style model with Name and Side attributes.
+    # This follows the SNN Specification v1.0.0 with Letter and Side attributes.
     class Style
       # SNN validation pattern matching the specification
-      SNN_PATTERN = /\A(?<identifier>[A-Z][A-Z0-9]*|[a-z][a-z0-9]*)\z/
-
-      # Pattern for proper name capitalization (first letter uppercase, rest lowercase/digits)
-      PROPER_NAME_PATTERN = /\A[A-Z][a-z0-9]*\z/
+      SNN_PATTERN = /\A[A-Za-z]\z/
 
       # Player side constants
       FIRST_PLAYER = :first
@@ -26,25 +23,25 @@ module Sashite
 
       # Error messages
       ERROR_INVALID_SNN = "Invalid SNN string: %s"
-      ERROR_INVALID_NAME = "Name must be a symbol with proper capitalization (first letter uppercase, rest lowercase), got: %s"
+      ERROR_INVALID_LETTER = "Letter must be a single ASCII letter symbol (A-Z, a-z), got: %s"
       ERROR_INVALID_SIDE = "Side must be :first or :second, got: %s"
 
-      # @return [Symbol] the style name (with proper capitalization)
-      attr_reader :name
+      # @return [Symbol] the style letter (single ASCII letter as symbol)
+      attr_reader :letter
 
       # @return [Symbol] the player side (:first or :second)
       attr_reader :side
 
       # Create a new style instance
       #
-      # @param name [Symbol] style name (with proper capitalization)
+      # @param letter [Symbol] style letter (single ASCII letter as symbol)
       # @param side [Symbol] player side (:first or :second)
       # @raise [ArgumentError] if parameters are invalid
-      def initialize(name, side)
-        self.class.validate_name(name)
+      def initialize(letter, side)
+        self.class.validate_letter(letter)
         self.class.validate_side(side)
 
-        @name = name
+        @letter = letter
         @side = side
 
         freeze
@@ -52,26 +49,24 @@ module Sashite
 
       # Parse an SNN string into a Style object
       #
-      # @param snn_string [String] SNN notation string
-      # @return [Style] parsed style object with normalized name and inferred side
+      # @param snn_string [String] SNN notation string (single ASCII letter)
+      # @return [Style] parsed style object with letter and inferred side
       # @raise [ArgumentError] if the SNN string is invalid
-      # @example Parse SNN strings with case normalization
-      #   Sashite::Snn::Style.parse("CHESS") # => #<Snn::Style name=:Chess side=:first>
-      #   Sashite::Snn::Style.parse("chess") # => #<Snn::Style name=:Chess side=:second>
-      #   Sashite::Snn::Style.parse("SHOGI") # => #<Snn::Style name=:Shogi side=:first>
+      # @example Parse SNN strings with case-based side inference
+      #   Sashite::Snn::Style.parse("C") # => #<Snn::Style letter=:C side=:first>
+      #   Sashite::Snn::Style.parse("c") # => #<Snn::Style letter=:c side=:second>
+      #   Sashite::Snn::Style.parse("S") # => #<Snn::Style letter=:S side=:first>
       def self.parse(snn_string)
         string_value = String(snn_string)
-        matches = match_pattern(string_value)
-
-        identifier = matches[:identifier]
+        validate_snn_string(string_value)
 
         # Determine side from case
-        style_side = identifier == identifier.upcase ? FIRST_PLAYER : SECOND_PLAYER
+        style_side = string_value == string_value.upcase ? FIRST_PLAYER : SECOND_PLAYER
 
-        # Normalize name to proper capitalization
-        style_name = normalize_name(identifier)
+        # Use the letter directly as symbol
+        style_letter = string_value.to_sym
 
-        new(style_name, style_side)
+        new(style_letter, style_side)
       end
 
       # Check if a string is a valid SNN notation
@@ -80,9 +75,9 @@ module Sashite
       # @return [Boolean] true if valid SNN, false otherwise
       #
       # @example Validate SNN strings
-      #   Sashite::Snn::Style.valid?("CHESS") # => true
-      #   Sashite::Snn::Style.valid?("chess") # => true
-      #   Sashite::Snn::Style.valid?("Chess") # => false
+      #   Sashite::Snn::Style.valid?("C") # => true
+      #   Sashite::Snn::Style.valid?("c") # => true
+      #   Sashite::Snn::Style.valid?("CHESS") # => false (multi-character)
       def self.valid?(snn_string)
         return false unless snn_string.is_a?(::String)
 
@@ -91,48 +86,53 @@ module Sashite
 
       # Convert the style to its SNN string representation
       #
-      # @return [String] SNN notation string with case based on side
-      # @example Display different sides
-      #   style.to_s  # => "CHESS" (first player)
-      #   style.to_s  # => "chess" (second player)
-      #   style.to_s  # => "SHOGI" (first player)
+      # @return [String] SNN notation string (single ASCII letter)
+      # @example Display styles
+      #   style.to_s  # => "C" (first player, C family)
+      #   style.to_s  # => "c" (second player, C family)
+      #   style.to_s  # => "S" (first player, S family)
       def to_s
-        first_player? ? name.to_s.upcase : name.to_s.downcase
+        letter.to_s
       end
 
       # Create a new style with opposite ownership (side)
       #
       # @return [Style] new immutable style instance with flipped side
       # @example Flip player sides
-      #   style.flip  # (:Chess, :first) => (:Chess, :second)
+      #   style.flip  # (:C, :first) => (:c, :second)
       def flip
-        self.class.new(name, opposite_side)
+        new_letter = first_player? ? letter.to_s.downcase.to_sym : letter.to_s.upcase.to_sym
+        self.class.new(new_letter, opposite_side)
       end
 
-      # Create a new style with a different name (keeping same side)
+      # Create a new style with a different letter (keeping same side)
       #
-      # @param new_name [Symbol] new name (with proper capitalization)
-      # @return [Style] new immutable style instance with different name
-      # @example Change style name
-      #   style.with_name(:Shogi)  # (:Chess, :first) => (:Shogi, :first)
-      def with_name(new_name)
-        self.class.validate_name(new_name)
-        return self if name == new_name
+      # @param new_letter [Symbol] new letter (single ASCII letter as symbol)
+      # @return [Style] new immutable style instance with different letter
+      # @example Change style letter
+      #   style.with_letter(:S)  # (:C, :first) => (:S, :first)
+      def with_letter(new_letter)
+        self.class.validate_letter(new_letter)
+        return self if letter == new_letter
 
-        self.class.new(new_name, side)
+        # Ensure the new letter has the correct case for the current side
+        adjusted_letter = first_player? ? new_letter.to_s.upcase.to_sym : new_letter.to_s.downcase.to_sym
+        self.class.new(adjusted_letter, side)
       end
 
-      # Create a new style with a different side (keeping same name)
+      # Create a new style with a different side (keeping same letter family)
       #
       # @param new_side [Symbol] :first or :second
       # @return [Style] new immutable style instance with different side
       # @example Change player side
-      #   style.with_side(:second)  # (:Chess, :first) => (:Chess, :second)
+      #   style.with_side(:second)  # (:C, :first) => (:c, :second)
       def with_side(new_side)
         self.class.validate_side(new_side)
         return self if side == new_side
 
-        self.class.new(name, new_side)
+        # Adjust letter case for the new side
+        new_letter = new_side == FIRST_PLAYER ? letter.to_s.upcase.to_sym : letter.to_s.downcase.to_sym
+        self.class.new(new_letter, new_side)
       end
 
       # Check if the style belongs to the first player
@@ -149,16 +149,16 @@ module Sashite
         side == SECOND_PLAYER
       end
 
-      # Check if this style has the same name as another
+      # Check if this style has the same letter family as another
       #
       # @param other [Style] style to compare with
-      # @return [Boolean] true if both styles have the same name
-      # @example Compare style names
-      #   chess1.same_name?(chess2)  # (:Chess, :first) and (:Chess, :second) => true
-      def same_name?(other)
+      # @return [Boolean] true if both styles use the same letter family (case-insensitive)
+      # @example Compare style letter families
+      #   c_style.same_letter?(C_style)  # (:c, :second) and (:C, :first) => true
+      def same_letter?(other)
         return false unless other.is_a?(self.class)
 
-        name == other.name
+        letter.to_s.upcase == other.letter.to_s.upcase
       end
 
       # Check if this style belongs to the same side as another
@@ -174,11 +174,11 @@ module Sashite
       # Custom equality comparison
       #
       # @param other [Object] object to compare with
-      # @return [Boolean] true if both objects are styles with identical name and side
+      # @return [Boolean] true if both objects are styles with identical letter and side
       def ==(other)
         return false unless other.is_a?(self.class)
 
-        name == other.name && side == other.side
+        letter == other.letter && side == other.side
       end
 
       # Alias for == to ensure Set functionality works correctly
@@ -186,19 +186,19 @@ module Sashite
 
       # Custom hash implementation for use in collections
       #
-      # @return [Integer] hash value based on class, name, and side
+      # @return [Integer] hash value based on class, letter, and side
       def hash
-        [self.class, name, side].hash
+        [self.class, letter, side].hash
       end
 
-      # Validate that the name is a valid symbol with proper capitalization
+      # Validate that the letter is a valid single ASCII letter symbol
       #
-      # @param name [Symbol] the name to validate
+      # @param letter [Symbol] the letter to validate
       # @raise [ArgumentError] if invalid
-      def self.validate_name(name)
-        return if valid_name?(name)
+      def self.validate_letter(letter)
+        return if valid_letter?(letter)
 
-        raise ::ArgumentError, format(ERROR_INVALID_NAME, name.inspect)
+        raise ::ArgumentError, format(ERROR_INVALID_LETTER, letter.inspect)
       end
 
       # Validate that the side is a valid symbol
@@ -211,44 +211,31 @@ module Sashite
         raise ::ArgumentError, format(ERROR_INVALID_SIDE, side.inspect)
       end
 
-      # Check if a name is valid (symbol with proper capitalization)
+      # Check if a letter is valid (single ASCII letter symbol)
       #
-      # @param name [Object] the name to check
+      # @param letter [Object] the letter to check
       # @return [Boolean] true if valid
-      def self.valid_name?(name)
-        return false unless name.is_a?(::Symbol)
+      def self.valid_letter?(letter)
+        return false unless letter.is_a?(::Symbol)
 
-        name_string = name.to_s
-        return false if name_string.empty?
+        letter_string = letter.to_s
+        return false if letter_string.empty?
 
-        # Must match proper capitalization pattern
-        name_string.match?(PROPER_NAME_PATTERN)
+        # Must be exactly one ASCII letter
+        letter_string.match?(SNN_PATTERN)
       end
 
-      # Normalize identifier to proper capitalization symbol
+      # Validate SNN string format
       #
-      # @param identifier [String] the identifier to normalize
-      # @return [Symbol] normalized name symbol
-      def self.normalize_name(identifier)
-        # Convert to proper capitalization: first letter uppercase, rest lowercase
-        normalized = identifier.downcase
-        normalized[0] = normalized[0].upcase if normalized.length > 0
-        normalized.to_sym
-      end
-
-      # Match SNN pattern against string
-      #
-      # @param string [String] string to match
-      # @return [MatchData] match data
-      # @raise [ArgumentError] if string doesn't match
-      def self.match_pattern(string)
-        matches = SNN_PATTERN.match(string)
-        return matches if matches
+      # @param string [String] string to validate
+      # @raise [ArgumentError] if string doesn't match SNN pattern
+      def self.validate_snn_string(string)
+        return if string.match?(SNN_PATTERN)
 
         raise ::ArgumentError, format(ERROR_INVALID_SNN, string)
       end
 
-      private_class_method :valid_name?, :normalize_name, :match_pattern
+      private_class_method :valid_letter?, :validate_snn_string
 
       private
 

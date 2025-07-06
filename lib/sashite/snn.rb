@@ -6,19 +6,19 @@ module Sashite
   # SNN (Style Name Notation) implementation for Ruby
   #
   # Provides a rule-agnostic format for identifying styles in abstract strategy board games.
-  # SNN uses standardized naming conventions with case-based side encoding, enabling clear
-  # distinction between different traditions in multi-style gaming environments.
+  # SNN uses single ASCII letters with case-based side encoding, enabling clear
+  # distinction between different style families in multi-style gaming environments.
   #
-  # Format: <style-identifier>
-  # - Uppercase identifier: First player styles (CHESS, SHOGI, XIANGQI)
-  # - Lowercase identifier: Second player styles (chess, shogi, xiangqi)
-  # - Case consistency: Entire identifier must be uppercase or lowercase
+  # Format: <style-letter>
+  # - Uppercase letter: First player styles (A, B, C, ..., Z)
+  # - Lowercase letter: Second player styles (a, b, c, ..., z)
+  # - Single character only: Each SNN identifier is exactly one ASCII letter
   #
   # Examples:
-  #   "CHESS"  - First player chess style
-  #   "chess"  - Second player chess style
-  #   "SHOGI"  - First player shōgi style
-  #   "shogi"  - Second player shōgi style
+  #   "C"  - First player, C style family
+  #   "c"  - Second player, C style family
+  #   "S"  - First player, S style family
+  #   "s"  - Second player, S style family
   #
   # See: https://sashite.dev/specs/snn/1.0.0/
   module Snn
@@ -28,8 +28,10 @@ module Sashite
     # @return [Boolean] true if valid SNN, false otherwise
     #
     # @example Validate various SNN formats
-    #   Sashite::Snn.valid?("CHESS") # => true
-    #   Sashite::Snn.valid?("Chess") # => false
+    #   Sashite::Snn.valid?("C") # => true
+    #   Sashite::Snn.valid?("c") # => true
+    #   Sashite::Snn.valid?("CHESS") # => false (multi-character)
+    #   Sashite::Snn.valid?("1") # => false (not a letter)
     def self.valid?(snn_string)
       Style.valid?(snn_string)
     end
@@ -37,27 +39,27 @@ module Sashite
     # Parse an SNN string into a Style object
     #
     # @param snn_string [String] SNN notation string
-    # @return [Snn::Style] parsed style object with name and side attributes
+    # @return [Snn::Style] parsed style object with letter and side attributes
     # @raise [ArgumentError] if the SNN string is invalid
     # @example Parse different SNN formats
-    #   Sashite::Snn.parse("CHESS") # => #<Snn::Style name=:Chess side=:first>
-    #   Sashite::Snn.parse("chess") # => #<Snn::Style name=:Chess side=:second>
-    #   Sashite::Snn.parse("SHOGI") # => #<Snn::Style name=:Shogi side=:first>
+    #   Sashite::Snn.parse("C") # => #<Snn::Style letter=:C side=:first>
+    #   Sashite::Snn.parse("c") # => #<Snn::Style letter=:c side=:second>
+    #   Sashite::Snn.parse("S") # => #<Snn::Style letter=:S side=:first>
     def self.parse(snn_string)
       Style.parse(snn_string)
     end
 
     # Create a new style instance
     #
-    # @param name [Symbol] style name (with proper capitalization)
+    # @param letter [Symbol] style letter (single ASCII letter as symbol)
     # @param side [Symbol] player side (:first or :second)
     # @return [Snn::Style] new immutable style instance
     # @raise [ArgumentError] if parameters are invalid
     # @example Create styles directly
-    #   Sashite::Snn.style(:Chess, :first)  # => #<Snn::Style name=:Chess side=:first>
-    #   Sashite::Snn.style(:Shogi, :second) # => #<Snn::Style name=:Shogi side=:second>
-    def self.style(name, side)
-      Style.new(name, side)
+    #   Sashite::Snn.style(:C, :first)  # => #<Snn::Style letter=:C side=:first>
+    #   Sashite::Snn.style(:s, :second) # => #<Snn::Style letter=:s side=:second>
+    def self.style(letter, side)
+      Style.new(letter, side)
     end
   end
 end
