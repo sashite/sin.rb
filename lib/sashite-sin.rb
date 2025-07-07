@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "sashite/snn"
+require_relative "sashite/sin"
 
 # Sashité namespace for board game notation libraries
 #

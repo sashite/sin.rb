@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 module Sashite
-  module Snn
-    # Represents a style in SNN (Style Name Notation) format.
+  module Sin
+    # Represents a style in SIN (Style Identifier Notation) format.
     #
     # A style consists of a single ASCII letter with case-based side encoding:
     # - Uppercase letter: first player (A, B, C, ..., Z)
     # - Lowercase letter: second player (a, b, c, ..., z)
     #
     # All instances are immutable - transformation methods return new instances.
-    # This follows the SNN Specification v1.0.0 with Letter and Side attributes.
+    # This follows the SIN Specification v1.0.0 with Letter and Side attributes.
     class Style
-      # SNN validation pattern matching the specification
-      SNN_PATTERN = /\A[A-Za-z]\z/
+      # SIN validation pattern matching the specification
+      SIN_PATTERN = /\A[A-Za-z]\z/
 
       # Player side constants
       FIRST_PLAYER = :first
@@ -22,7 +22,7 @@ module Sashite
       VALID_SIDES = [FIRST_PLAYER, SECOND_PLAYER].freeze
 
       # Error messages
-      ERROR_INVALID_SNN = "Invalid SNN string: %s"
+      ERROR_INVALID_SIN = "Invalid SIN string: %s"
       ERROR_INVALID_LETTER = "Letter must be a single ASCII letter symbol (A-Z, a-z), got: %s"
       ERROR_INVALID_SIDE = "Side must be :first or :second, got: %s"
 
@@ -47,18 +47,18 @@ module Sashite
         freeze
       end
 
-      # Parse an SNN string into a Style object
+      # Parse an SIN string into a Style object
       #
-      # @param snn_string [String] SNN notation string (single ASCII letter)
+      # @param sin_string [String] SIN notation string (single ASCII letter)
       # @return [Style] parsed style object with letter and inferred side
-      # @raise [ArgumentError] if the SNN string is invalid
-      # @example Parse SNN strings with case-based side inference
-      #   Sashite::Snn::Style.parse("C") # => #<Snn::Style letter=:C side=:first>
-      #   Sashite::Snn::Style.parse("c") # => #<Snn::Style letter=:c side=:second>
-      #   Sashite::Snn::Style.parse("S") # => #<Snn::Style letter=:S side=:first>
-      def self.parse(snn_string)
-        string_value = String(snn_string)
-        validate_snn_string(string_value)
+      # @raise [ArgumentError] if the SIN string is invalid
+      # @example Parse SIN strings with case-based side inference
+      #   Sashite::Sin::Style.parse("C") # => #<Sin::Style letter=:C side=:first>
+      #   Sashite::Sin::Style.parse("c") # => #<Sin::Style letter=:c side=:second>
+      #   Sashite::Sin::Style.parse("S") # => #<Sin::Style letter=:S side=:first>
+      def self.parse(sin_string)
+        string_value = String(sin_string)
+        validate_sin_string(string_value)
 
         # Determine side from case
         style_side = string_value == string_value.upcase ? FIRST_PLAYER : SECOND_PLAYER
@@ -69,24 +69,24 @@ module Sashite
         new(style_letter, style_side)
       end
 
-      # Check if a string is a valid SNN notation
+      # Check if a string is a valid SIN notation
       #
-      # @param snn_string [String] the string to validate
-      # @return [Boolean] true if valid SNN, false otherwise
+      # @param sin_string [String] the string to validate
+      # @return [Boolean] true if valid SIN, false otherwise
       #
-      # @example Validate SNN strings
-      #   Sashite::Snn::Style.valid?("C") # => true
-      #   Sashite::Snn::Style.valid?("c") # => true
-      #   Sashite::Snn::Style.valid?("CHESS") # => false (multi-character)
-      def self.valid?(snn_string)
-        return false unless snn_string.is_a?(::String)
+      # @example Validate SIN strings
+      #   Sashite::Sin::Style.valid?("C") # => true
+      #   Sashite::Sin::Style.valid?("c") # => true
+      #   Sashite::Sin::Style.valid?("CHESS") # => false (multi-character)
+      def self.valid?(sin_string)
+        return false unless sin_string.is_a?(::String)
 
-        snn_string.match?(SNN_PATTERN)
+        sin_string.match?(SIN_PATTERN)
       end
 
-      # Convert the style to its SNN string representation
+      # Convert the style to its SIN string representation
       #
-      # @return [String] SNN notation string (single ASCII letter)
+      # @return [String] SIN notation string (single ASCII letter)
       # @example Display styles
       #   style.to_s  # => "C" (first player, C family)
       #   style.to_s  # => "c" (second player, C family)
@@ -222,20 +222,20 @@ module Sashite
         return false if letter_string.empty?
 
         # Must be exactly one ASCII letter
-        letter_string.match?(SNN_PATTERN)
+        letter_string.match?(SIN_PATTERN)
       end
 
-      # Validate SNN string format
+      # Validate SIN string format
       #
       # @param string [String] string to validate
-      # @raise [ArgumentError] if string doesn't match SNN pattern
-      def self.validate_snn_string(string)
-        return if string.match?(SNN_PATTERN)
+      # @raise [ArgumentError] if string doesn't match SIN pattern
+      def self.validate_sin_string(string)
+        return if string.match?(SIN_PATTERN)
 
-        raise ::ArgumentError, format(ERROR_INVALID_SNN, string)
+        raise ::ArgumentError, format(ERROR_INVALID_SIN, string)
       end
 
-      private_class_method :valid_letter?, :validate_snn_string
+      private_class_method :valid_letter?, :validate_sin_string
 
       private
 

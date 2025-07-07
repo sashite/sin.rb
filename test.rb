@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-# Tests for Sashite::Snn (Style Name Notation)
+# Tests for Sashite::Sin (Style Identifier Notation)
 #
-# Tests the SNN implementation for Ruby, focusing on the modern object-oriented API
-# with the Style class using letter-based attributes conforming to SNN v1.0.0 specification.
+# Tests the SIN implementation for Ruby, focusing on the modern object-oriented API
+# with the Style class using letter-based attributes conforming to SIN v1.0.0 specification.
 
-require_relative "lib/sashite-snn"
+require_relative "lib/sashite-sin"
 require "set"
 
 # Helper function to run a test and report errors
@@ -20,25 +20,25 @@ rescue StandardError => e
 end
 
 puts
-puts "Tests for Sashite::Snn (Style Name Notation) v1.0.0"
+puts "Tests for Sashite::Sin (Style Identifier Notation) v1.0.0"
 puts
 
 # Test basic validation (module level)
-run_test("Module SNN validation accepts valid notations") do
-  valid_snns = [
+run_test("Module SIN validation accepts valid notations") do
+  valid_sins = [
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
   ]
 
-  valid_snns.each do |snn|
-    raise "#{snn.inspect} should be valid" unless Sashite::Snn.valid?(snn)
+  valid_sins.each do |sin|
+    raise "#{sin.inspect} should be valid" unless Sashite::Sin.valid?(sin)
   end
 end
 
-run_test("Module SNN validation rejects invalid notations") do
-  invalid_snns = [
+run_test("Module SIN validation rejects invalid notations") do
+  invalid_sins = [
     "", "AA", "Aa", "aA", "aa", "AB", "ab", "Chess", "CHESS", "chess",
     "123", "1", "2", "A1", "1A", "A2", "2A", "B1", "1B",
     "!", "@", "#", "$", "%", "^", "&", "*", "(", ")",
@@ -46,36 +46,36 @@ run_test("Module SNN validation rejects invalid notations") do
     "α", "β", "♕", "♔", "🀄", "象", "將", "CHESS", "SHOGI"
   ]
 
-  invalid_snns.each do |snn|
-    raise "#{snn.inspect} should be invalid" if Sashite::Snn.valid?(snn)
+  invalid_sins.each do |sin|
+    raise "#{sin.inspect} should be invalid" if Sashite::Sin.valid?(sin)
   end
 end
 
-run_test("Module SNN validation handles non-string input") do
+run_test("Module SIN validation handles non-string input") do
   non_strings = [nil, 123, :chess, [], {}, true, false, 1.5]
 
   non_strings.each do |input|
-    raise "#{input.inspect} should be invalid" if Sashite::Snn.valid?(input)
+    raise "#{input.inspect} should be invalid" if Sashite::Sin.valid?(input)
   end
 end
 
 # Test module parse method delegates to Style
 run_test("Module parse delegates to Style class") do
-  snn_string = "C"
-  style = Sashite::Snn.parse(snn_string)
+  sin_string = "C"
+  style = Sashite::Sin.parse(sin_string)
 
-  raise "parse should return Style instance" unless style.is_a?(Sashite::Snn::Style)
-  raise "style should have correct SNN string" unless style.to_s == snn_string
+  raise "parse should return Style instance" unless style.is_a?(Sashite::Sin::Style)
+  raise "style should have correct SIN string" unless style.to_s == sin_string
 end
 
 # Test module style factory method
 run_test("Module style factory method creates correct instances") do
-  style = Sashite::Snn.style(:C, :first)
+  style = Sashite::Sin.style(:C, :first)
 
-  raise "style factory should return Style instance" unless style.is_a?(Sashite::Snn::Style)
+  raise "style factory should return Style instance" unless style.is_a?(Sashite::Sin::Style)
   raise "style should have correct letter" unless style.letter == :C
   raise "style should have correct side" unless style.side == :first
-  raise "style should have correct SNN string" unless style.to_s == "C"
+  raise "style should have correct SIN string" unless style.to_s == "C"
 end
 
 # Test the Style class with letter-based API
@@ -89,11 +89,11 @@ run_test("Style.parse creates correct instances with letter attributes") do
     "x" => { letter: :x, side: :second }
   }
 
-  test_cases.each do |snn_string, expected|
-    style = Sashite::Snn.parse(snn_string)
+  test_cases.each do |sin_string, expected|
+    style = Sashite::Sin.parse(sin_string)
 
-    raise "#{snn_string}: wrong letter" unless style.letter == expected[:letter]
-    raise "#{snn_string}: wrong side" unless style.side == expected[:side]
+    raise "#{sin_string}: wrong letter" unless style.letter == expected[:letter]
+    raise "#{sin_string}: wrong side" unless style.side == expected[:side]
   end
 end
 
@@ -107,16 +107,16 @@ run_test("Style constructor with letter parameters") do
     [:x, :second, "x"]
   ]
 
-  test_cases.each do |letter, side, expected_snn|
-    style = Sashite::Snn::Style.new(letter, side)
+  test_cases.each do |letter, side, expected_sin|
+    style = Sashite::Sin::Style.new(letter, side)
 
     raise "letter should be #{letter}" unless style.letter == letter
     raise "side should be #{side}" unless style.side == side
-    raise "SNN string should be #{expected_snn}" unless style.to_s == expected_snn
+    raise "SIN string should be #{expected_sin}" unless style.to_s == expected_sin
   end
 end
 
-run_test("Style to_s returns correct SNN string") do
+run_test("Style to_s returns correct SIN string") do
   test_cases = [
     [:C, :first, "C"],
     [:c, :second, "c"],
@@ -127,7 +127,7 @@ run_test("Style to_s returns correct SNN string") do
   ]
 
   test_cases.each do |letter, side, expected|
-    style = Sashite::Snn::Style.new(letter, side)
+    style = Sashite::Sin::Style.new(letter, side)
     result = style.to_s
 
     raise "#{letter}, #{side} should be #{expected}, got #{result}" unless result == expected
@@ -135,7 +135,7 @@ run_test("Style to_s returns correct SNN string") do
 end
 
 run_test("Style side mutations return new instances") do
-  style = Sashite::Snn::Style.new(:C, :first)
+  style = Sashite::Sin::Style.new(:C, :first)
 
   # Test flip
   flipped = style.flip
@@ -146,7 +146,7 @@ run_test("Style side mutations return new instances") do
 end
 
 run_test("Style attribute transformations") do
-  style = Sashite::Snn::Style.new(:C, :first)
+  style = Sashite::Sin::Style.new(:C, :first)
 
   # Test with_letter
   s_style = style.with_letter(:S)
@@ -162,7 +162,7 @@ run_test("Style attribute transformations") do
 end
 
 run_test("Style immutability") do
-  style = Sashite::Snn::Style.new(:C, :first)
+  style = Sashite::Sin::Style.new(:C, :first)
 
   # Test that style is frozen
   raise "style should be frozen" unless style.frozen?
@@ -176,10 +176,10 @@ run_test("Style immutability") do
 end
 
 run_test("Style equality and hash") do
-  style1 = Sashite::Snn::Style.new(:C, :first)
-  style2 = Sashite::Snn::Style.new(:C, :first)
-  style3 = Sashite::Snn::Style.new(:c, :second)
-  style4 = Sashite::Snn::Style.new(:S, :first)
+  style1 = Sashite::Sin::Style.new(:C, :first)
+  style2 = Sashite::Sin::Style.new(:C, :first)
+  style3 = Sashite::Sin::Style.new(:c, :second)
+  style4 = Sashite::Sin::Style.new(:S, :first)
 
   # Test equality
   raise "identical styles should be equal" unless style1 == style2
@@ -202,21 +202,21 @@ run_test("Style letter and side identification") do
     ["s", :s, :second, false, true]
   ]
 
-  test_cases.each do |snn_string, expected_letter, expected_side, is_first, is_second|
-    style = Sashite::Snn.parse(snn_string)
+  test_cases.each do |sin_string, expected_letter, expected_side, is_first, is_second|
+    style = Sashite::Sin.parse(sin_string)
 
-    raise "#{snn_string}: wrong letter" unless style.letter == expected_letter
-    raise "#{snn_string}: wrong side" unless style.side == expected_side
-    raise "#{snn_string}: wrong first_player?" unless style.first_player? == is_first
-    raise "#{snn_string}: wrong second_player?" unless style.second_player? == is_second
+    raise "#{sin_string}: wrong letter" unless style.letter == expected_letter
+    raise "#{sin_string}: wrong side" unless style.side == expected_side
+    raise "#{sin_string}: wrong first_player?" unless style.first_player? == is_first
+    raise "#{sin_string}: wrong second_player?" unless style.second_player? == is_second
   end
 end
 
 run_test("Style same_letter? and same_side? methods") do
-  c_first = Sashite::Snn::Style.new(:C, :first)
-  c_second = Sashite::Snn::Style.new(:c, :second)
-  s_first = Sashite::Snn::Style.new(:S, :first)
-  s_second = Sashite::Snn::Style.new(:s, :second)
+  c_first = Sashite::Sin::Style.new(:C, :first)
+  c_second = Sashite::Sin::Style.new(:c, :second)
+  s_first = Sashite::Sin::Style.new(:S, :first)
+  s_second = Sashite::Sin::Style.new(:s, :second)
 
   # same_letter? tests (case-insensitive)
   raise "C and c should be same letter family" unless c_first.same_letter?(c_second)
@@ -228,7 +228,7 @@ run_test("Style same_letter? and same_side? methods") do
 end
 
 run_test("Style transformation methods return self when appropriate") do
-  style = Sashite::Snn::Style.new(:C, :first)
+  style = Sashite::Sin::Style.new(:C, :first)
 
   # Test with_* methods that should return self
   raise "with_letter with same letter should return self" unless style.with_letter(:C).equal?(style)
@@ -236,7 +236,7 @@ run_test("Style transformation methods return self when appropriate") do
 end
 
 run_test("Style transformation chains") do
-  style = Sashite::Snn::Style.new(:C, :first)
+  style = Sashite::Sin::Style.new(:C, :first)
 
   # Test flip then flip
   flipped = style.flip
@@ -255,7 +255,7 @@ run_test("Style error handling for invalid letters") do
 
   invalid_letters.each do |letter|
     begin
-      Sashite::Snn::Style.new(letter, :first)
+      Sashite::Sin::Style.new(letter, :first)
       raise "Should have raised error for invalid letter #{letter.inspect}"
     rescue ArgumentError => e
       raise "Error message should mention invalid letter" unless e.message.include?("Letter must be")
@@ -267,7 +267,7 @@ run_test("Style error handling for invalid letters") do
 
   invalid_sides.each do |side|
     begin
-      Sashite::Snn::Style.new(:C, side)
+      Sashite::Sin::Style.new(:C, side)
       raise "Should have raised error for invalid side #{side.inspect}"
     rescue ArgumentError => e
       raise "Error message should mention invalid side" unless e.message.include?("Side must be")
@@ -275,16 +275,16 @@ run_test("Style error handling for invalid letters") do
   end
 end
 
-run_test("Style error handling for invalid SNN strings") do
-  # Invalid SNN strings
-  invalid_snns = ["", "Chess", "AA", "123", nil, Object]
+run_test("Style error handling for invalid SIN strings") do
+  # Invalid SIN strings
+  invalid_sins = ["", "Chess", "AA", "123", nil, Object]
 
-  invalid_snns.each do |snn|
+  invalid_sins.each do |sin|
     begin
-      Sashite::Snn.parse(snn)
-      raise "Should have raised error for #{snn.inspect}"
+      Sashite::Sin.parse(sin)
+      raise "Should have raised error for #{sin.inspect}"
     rescue ArgumentError => e
-      raise "Error message should mention invalid SNN" unless e.message.include?("Invalid SNN")
+      raise "Error message should mention invalid SIN" unless e.message.include?("Invalid SIN")
     end
   end
 end
@@ -292,28 +292,28 @@ end
 # Test letter family examples with new API
 run_test("Letter family styles with new API") do
   # Chess family (C)
-  chess_first = Sashite::Snn.style(:C, :first)
+  chess_first = Sashite::Sin.style(:C, :first)
   raise "Chess first should be first player" unless chess_first.first_player?
   raise "Chess letter should be :C" unless chess_first.letter == :C
 
-  chess_second = Sashite::Snn.style(:c, :second)
+  chess_second = Sashite::Sin.style(:c, :second)
   raise "Chess second should be second player" unless chess_second.second_player?
   raise "Chess letter should be :c" unless chess_second.letter == :c
 
   # Shogi family (S)
-  shogi_first = Sashite::Snn.style(:S, :first)
+  shogi_first = Sashite::Sin.style(:S, :first)
   raise "Shogi letter should be :S" unless shogi_first.letter == :S
-  raise "Shogi SNN should be S" unless shogi_first.to_s == "S"
+  raise "Shogi SIN should be S" unless shogi_first.to_s == "S"
 
   # Xiangqi family (X)
-  xiangqi_first = Sashite::Snn.style(:X, :first)
+  xiangqi_first = Sashite::Sin.style(:X, :first)
   raise "Xiangqi letter should be :X" unless xiangqi_first.letter == :X
-  raise "Xiangqi SNN should be X" unless xiangqi_first.to_s == "X"
+  raise "Xiangqi SIN should be X" unless xiangqi_first.to_s == "X"
 end
 
 run_test("Cross-style transformations with new API") do
   # Test that styles can be transformed across different letter families
-  style = Sashite::Snn.style(:C, :first)
+  style = Sashite::Sin.style(:C, :first)
 
   # Chain transformations
   transformed = style.flip.with_letter(:S).flip.with_letter(:X)
@@ -326,10 +326,10 @@ end
 # Test practical usage scenarios with new API
 run_test("Practical usage - style collections with new API") do
   styles = [
-    Sashite::Snn.style(:C, :first),
-    Sashite::Snn.style(:S, :first),
-    Sashite::Snn.style(:X, :first),
-    Sashite::Snn.style(:c, :second)
+    Sashite::Sin.style(:C, :first),
+    Sashite::Sin.style(:S, :first),
+    Sashite::Sin.style(:X, :first),
+    Sashite::Sin.style(:c, :second)
   ]
 
   # Filter by side
@@ -347,8 +347,8 @@ end
 
 run_test("Practical usage - game configuration with new API") do
   # Simulate multi-style match setup
-  white_style = Sashite::Snn.style(:C, :first)
-  black_style = Sashite::Snn.style(:s, :second)
+  white_style = Sashite::Sin.style(:C, :first)
+  black_style = Sashite::Sin.style(:s, :second)
 
   raise "White should be first player" unless white_style.first_player?
   raise "Black should be second player" unless black_style.second_player?
@@ -367,7 +367,7 @@ run_test("All 26 ASCII letters work correctly") do
 
   letters.each do |letter|
     # Test parsing
-    style = Sashite::Snn.parse(letter)
+    style = Sashite::Sin.parse(letter)
     raise "#{letter} should parse correctly" unless style.letter.to_s == letter
 
     # Test side inference
@@ -382,7 +382,7 @@ end
 run_test("Letter case transformations work correctly") do
   # Test all uppercase letters can flip to lowercase
   ("A".."Z").each do |upper|
-    style = Sashite::Snn.parse(upper)
+    style = Sashite::Sin.parse(upper)
     flipped = style.flip
     expected_lower = upper.downcase
 
@@ -392,7 +392,7 @@ run_test("Letter case transformations work correctly") do
 
   # Test all lowercase letters can flip to uppercase
   ("a".."z").each do |lower|
-    style = Sashite::Snn.parse(lower)
+    style = Sashite::Sin.parse(lower)
     flipped = style.flip
     expected_upper = lower.upcase
 
@@ -407,8 +407,8 @@ run_test("Same letter family detection works correctly") do
   ]
 
   test_pairs.each do |upper, lower|
-    style1 = Sashite::Snn.parse(upper)
-    style2 = Sashite::Snn.parse(lower)
+    style1 = Sashite::Sin.parse(upper)
+    style2 = Sashite::Sin.parse(lower)
 
     raise "#{upper} and #{lower} should be same letter family" unless style1.same_letter?(style2)
     raise "#{upper} and #{lower} should not be same side" if style1.same_side?(style2)
@@ -427,31 +427,31 @@ run_test("Regex pattern compliance with spec") do
 
   test_strings.each do |string|
     spec_match = string.match?(spec_regex)
-    snn_valid = Sashite::Snn.valid?(string)
+    sin_valid = Sashite::Sin.valid?(string)
 
-    raise "#{string.inspect}: spec regex and SNN validation disagree" unless spec_match == snn_valid
+    raise "#{string.inspect}: spec regex and SIN validation disagree" unless spec_match == sin_valid
   end
 end
 
 # Test constants
 run_test("Regular expression constant is correctly defined") do
-  regex = Sashite::Snn::Style::SNN_PATTERN
+  regex = Sashite::Sin::Style::SIN_PATTERN
 
-  raise "SNN_PATTERN should match valid SNNs" unless "C".match?(regex)
-  raise "SNN_PATTERN should match lowercase SNNs" unless "c".match?(regex)
-  raise "SNN_PATTERN should not match multi-char" if "CC".match?(regex)
-  raise "SNN_PATTERN should not match numbers" if "1".match?(regex)
+  raise "SIN_PATTERN should match valid SINs" unless "C".match?(regex)
+  raise "SIN_PATTERN should match lowercase SINs" unless "c".match?(regex)
+  raise "SIN_PATTERN should not match multi-char" if "CC".match?(regex)
+  raise "SIN_PATTERN should not match numbers" if "1".match?(regex)
 end
 
 # Test performance with new API
 run_test("Performance - repeated operations with new API") do
   # Test performance with many repeated calls
   1000.times do
-    style = Sashite::Snn.style(:C, :first)
+    style = Sashite::Sin.style(:C, :first)
     flipped = style.flip
     renamed = style.with_letter(:S)
 
-    raise "Performance test failed" unless Sashite::Snn.valid?("C")
+    raise "Performance test failed" unless Sashite::Sin.valid?("C")
     raise "Performance test failed" unless flipped.second_player?
     raise "Performance test failed" unless renamed.letter == :S
   end
@@ -459,7 +459,7 @@ end
 
 # Test constants and validation
 run_test("Style class constants are properly defined") do
-  style_class = Sashite::Snn::Style
+  style_class = Sashite::Sin::Style
 
   # Test side constants
   raise "FIRST_PLAYER should be :first" unless style_class::FIRST_PLAYER == :first
@@ -480,9 +480,9 @@ run_test("Roundtrip parsing consistency") do
 
   test_cases.each do |letter, side|
     # Create style -> to_s -> parse -> compare
-    original = Sashite::Snn::Style.new(letter, side)
-    snn_string = original.to_s
-    parsed = Sashite::Snn.parse(snn_string)
+    original = Sashite::Sin::Style.new(letter, side)
+    sin_string = original.to_s
+    parsed = Sashite::Sin.parse(sin_string)
 
     raise "Roundtrip failed: original != parsed" unless original == parsed
     raise "Roundtrip failed: different letter" unless original.letter == parsed.letter
@@ -496,15 +496,15 @@ run_test("Case sensitivity maintained correctly") do
   valid_cases = ["A", "B", "C", "a", "b", "c"]
   invalid_cases = ["Aa", "aA", "Ab", "bA"]
 
-  valid_cases.each do |snn|
-    raise "#{snn} should be valid" unless Sashite::Snn.valid?(snn)
+  valid_cases.each do |sin|
+    raise "#{sin} should be valid" unless Sashite::Sin.valid?(sin)
   end
 
-  invalid_cases.each do |snn|
-    raise "#{snn} should be invalid" if Sashite::Snn.valid?(snn)
+  invalid_cases.each do |sin|
+    raise "#{sin} should be invalid" if Sashite::Sin.valid?(sin)
   end
 end
 
 puts
-puts "All SNN v1.0.0 tests passed!"
+puts "All SIN v1.0.0 tests passed!"
 puts

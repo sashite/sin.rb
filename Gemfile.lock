@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sashite-snn (2.0.0)
+    sashite-sin (1.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -95,7 +95,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rake
   rubocop-thread_safety
-  sashite-snn!
+  sashite-sin!
   simplecov
   yard
 
