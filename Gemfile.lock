@@ -8,9 +8,6 @@ GEM
   specs:
     ast (2.4.3)
     date (3.4.1)
-    debug (1.11.0)
-      irb (~> 1.10)
-      reline (>= 0.3.8)
     docile (1.4.1)
     erb (5.0.1)
     io-console (0.8.0)
@@ -55,6 +52,8 @@ GEM
     rubocop-ast (1.45.1)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
+    rubocop-gitlab-security (0.1.1)
+      rubocop (>= 0.51)
     rubocop-md (2.0.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.72.1)
@@ -88,9 +87,11 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
-  debug
+  irb
   rake
+  rdoc
   rubocop
+  rubocop-gitlab-security
   rubocop-md
   rubocop-performance
   rubocop-rake

@@ -103,15 +103,15 @@ styles = %w[C c S s M m].map { |sin| Sashite::Sin.parse(sin) }
 
 # Filter by player
 first_player_styles = styles.select(&:first_player?)
-first_player_styles.map(&:to_s)          # => ["C", "S", "M"]
+first_player_styles.map(&:to_s) # => ["C", "S", "M"]
 
 # Group by letter family
 by_letter = styles.group_by { |s| s.letter.to_s.upcase }
-by_letter["C"].size                       # => 2 (both C and c)
+by_letter["C"].size # => 2 (both C and c)
 
 # Find specific combinations
 chess_styles = styles.select { |s| s.letter.to_s.upcase == "C" }
-chess_styles.map(&:to_s)                  # => ["C", "c"]
+chess_styles.map(&:to_s) # => ["C", "c"]
 ```
 
 ## Format Specification
@@ -240,10 +240,10 @@ upper_case_letters = ("A".."Z").map { |letter| Sashite::Sin.parse(letter) }
 lower_case_letters = ("a".."z").map { |letter| Sashite::Sin.parse(letter) }
 
 # All uppercase letters are first player
-upper_case_letters.all?(&:first_player?)     # => true
+upper_case_letters.all?(&:first_player?) # => true
 
 # All lowercase letters are second player
-lower_case_letters.all?(&:second_player?)    # => true
+lower_case_letters.all?(&:second_player?) # => true
 
 # Letter families are related by case
 letter_a_first = Sashite::Sin.parse("A")
@@ -268,115 +268,7 @@ changed_letter.to_s                     # => "S"
 
 # Transformations can be chained
 result = original.flip.with_letter(:M).flip
-result.to_s                             # => "M"
-```
-
-### Game Configuration Management
-
-```ruby
-class GameConfiguration
-  def initialize
-    @player_styles = {}
-  end
-
-  def set_player_style(player, letter)
-    side = player == :white ? :first : :second
-    @player_styles[player] = Sashite::Sin.style(letter, side)
-  end
-
-  def get_player_style(player)
-    @player_styles[player]
-  end
-
-  def cross_family_match?
-    return false if @player_styles.size < 2
-
-    styles = @player_styles.values
-    !styles.all? { |style| style.same_letter?(styles.first) }
-  end
-
-  def same_family_match?
-    !cross_family_match?
-  end
-end
-
-# Usage
-config = GameConfiguration.new
-config.set_player_style(:white, :C)    # Chess family, first player
-config.set_player_style(:black, :S)    # Shōgi family, second player
-
-config.cross_family_match?             # => true
-
-white_style = config.get_player_style(:white)
-white_style.to_s                       # => "C"
-```
-
-### Style Analysis
-
-```ruby
-def analyze_styles(sins)
-  styles = sins.map { |sin| Sashite::Sin.parse(sin) }
-
-  {
-    total: styles.size,
-    by_side: styles.group_by(&:side),
-    by_letter: styles.group_by { |s| s.letter.to_s.upcase },
-    unique_letters: styles.map { |s| s.letter.to_s.upcase }.uniq.size,
-    cross_family: styles.map { |s| s.letter.to_s.upcase }.uniq.size > 1
-  }
-end
-
-sins = %w[C c S s X x]
-analysis = analyze_styles(sins)
-analysis[:by_side][:first].size        # => 3
-analysis[:unique_letters]              # => 3
-analysis[:cross_family]                # => true
-```
-
-### Tournament Style Registry
-
-```ruby
-class TournamentStyleRegistry
-  def initialize
-    @registered_styles = Set.new
-  end
-
-  def register_letter(letter)
-    # Register both sides of a letter family
-    first_player_style = Sashite::Sin.style(letter.to_s.upcase.to_sym, :first)
-    second_player_style = first_player_style.flip
-
-    @registered_styles.add(first_player_style)
-    @registered_styles.add(second_player_style)
-
-    [first_player_style, second_player_style]
-  end
-
-  def valid_pairing?(style1, style2)
-    @registered_styles.include?(style1) &&
-    @registered_styles.include?(style2) &&
-    !style1.same_side?(style2)
-  end
-
-  def available_styles_for_side(side)
-    @registered_styles.select { |style| style.side == side }
-  end
-
-  def supported_families
-    @registered_styles.map { |s| s.letter.to_s.upcase }.uniq.sort
-  end
-end
-
-# Usage
-registry = TournamentStyleRegistry.new
-registry.register_letter(:C)
-registry.register_letter(:S)
-
-chess_white = Sashite::Sin.parse("C")
-shogi_black = Sashite::Sin.parse("s")
-
-registry.valid_pairing?(chess_white, shogi_black)  # => true
-registry.supported_families                        # => ["C", "S"]
+result.to_s # => "M"
 ```
 
 ## Protocol Mapping

@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
+require "simplecov"
+
+SimpleCov.command_name "Unit Tests"
+SimpleCov.start
+
 # Tests for Sashite::Sin (Style Identifier Notation)
 #
 # Tests the SIN implementation for Ruby, focusing on the modern object-oriented API
 # with the Style class using letter-based attributes conforming to SIN v1.0.0 specification.
+#
+# This test assumes the existence of:
+# - lib/sashite-sin.rb
 
 require_relative "lib/sashite-sin"
 require "set"
