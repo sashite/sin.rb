@@ -5,16 +5,16 @@ Gem::Specification.new do |spec|
   spec.version = ::File.read("VERSION.semver").chomp
   spec.author  = "Cyril Kato"
   spec.email   = "contact@cyril.email"
-  spec.summary = "SIN (Style Identifier Notation) implementation for Ruby with immutable style objects"
+  spec.summary = "SIN (Style Identifier Notation) implementation for Ruby with immutable identifier objects"
 
   spec.description = <<~DESC
     SIN (Style Identifier Notation) provides a rule-agnostic format for identifying styles
     in abstract strategy board games. This gem implements the SIN Specification v1.0.0 with
-    a modern Ruby interface featuring immutable style objects and functional programming
+    a modern Ruby interface featuring immutable identifier objects and functional programming
     principles. SIN uses single ASCII letters with case-based side encoding (A-Z for first player,
     a-z for second player), enabling clear distinction between different style families in
     multi-style gaming environments. Perfect for cross-style matches, game engines, and hybrid
-    gaming systems requiring compact style identification.
+    gaming systems requiring compact style identification with enhanced collision resolution.
   DESC
 
   spec.homepage               = "https://github.com/sashite/sin.rb"

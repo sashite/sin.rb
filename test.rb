@@ -8,7 +8,7 @@ SimpleCov.start
 # Tests for Sashite::Sin (Style Identifier Notation)
 #
 # Tests the SIN implementation for Ruby, focusing on the modern object-oriented API
-# with the Style class using letter-based attributes conforming to SIN v1.0.0 specification.
+# with the Identifier class using letter-based attributes conforming to SIN v1.0.0 specification.
 #
 # This test assumes the existence of:
 # - lib/sashite-sin.rb
@@ -67,27 +67,27 @@ run_test("Module SIN validation handles non-string input") do
   end
 end
 
-# Test module parse method delegates to Style
-run_test("Module parse delegates to Style class") do
+# Test module parse method delegates to Identifier
+run_test("Module parse delegates to Identifier class") do
   sin_string = "C"
-  style = Sashite::Sin.parse(sin_string)
+  identifier = Sashite::Sin.parse(sin_string)
 
-  raise "parse should return Style instance" unless style.is_a?(Sashite::Sin::Style)
-  raise "style should have correct SIN string" unless style.to_s == sin_string
+  raise "parse should return Identifier instance" unless identifier.is_a?(Sashite::Sin::Identifier)
+  raise "identifier should have correct SIN string" unless identifier.to_s == sin_string
 end
 
-# Test module style factory method
-run_test("Module style factory method creates correct instances") do
-  style = Sashite::Sin.style(:C, :first)
+# Test module identifier factory method
+run_test("Module identifier factory method creates correct instances") do
+  identifier = Sashite::Sin.identifier(:C, :first)
 
-  raise "style factory should return Style instance" unless style.is_a?(Sashite::Sin::Style)
-  raise "style should have correct letter" unless style.letter == :C
-  raise "style should have correct side" unless style.side == :first
-  raise "style should have correct SIN string" unless style.to_s == "C"
+  raise "identifier factory should return Identifier instance" unless identifier.is_a?(Sashite::Sin::Identifier)
+  raise "identifier should have correct letter" unless identifier.letter == :C
+  raise "identifier should have correct side" unless identifier.side == :first
+  raise "identifier should have correct SIN string" unless identifier.to_s == "C"
 end
 
-# Test the Style class with letter-based API
-run_test("Style.parse creates correct instances with letter attributes") do
+# Test the Identifier class with letter-based API
+run_test("Identifier.parse creates correct instances with letter attributes") do
   test_cases = {
     "C" => { letter: :C, side: :first },
     "c" => { letter: :c, side: :second },
@@ -98,14 +98,14 @@ run_test("Style.parse creates correct instances with letter attributes") do
   }
 
   test_cases.each do |sin_string, expected|
-    style = Sashite::Sin.parse(sin_string)
+    identifier = Sashite::Sin.parse(sin_string)
 
-    raise "#{sin_string}: wrong letter" unless style.letter == expected[:letter]
-    raise "#{sin_string}: wrong side" unless style.side == expected[:side]
+    raise "#{sin_string}: wrong letter" unless identifier.letter == expected[:letter]
+    raise "#{sin_string}: wrong side" unless identifier.side == expected[:side]
   end
 end
 
-run_test("Style constructor with letter parameters") do
+run_test("Identifier constructor with letter parameters") do
   test_cases = [
     [:C, :first, "C"],
     [:c, :second, "c"],
@@ -116,15 +116,15 @@ run_test("Style constructor with letter parameters") do
   ]
 
   test_cases.each do |letter, side, expected_sin|
-    style = Sashite::Sin::Style.new(letter, side)
+    identifier = Sashite::Sin::Identifier.new(letter, side)
 
-    raise "letter should be #{letter}" unless style.letter == letter
-    raise "side should be #{side}" unless style.side == side
-    raise "SIN string should be #{expected_sin}" unless style.to_s == expected_sin
+    raise "letter should be #{letter}" unless identifier.letter == letter
+    raise "side should be #{side}" unless identifier.side == side
+    raise "SIN string should be #{expected_sin}" unless identifier.to_s == expected_sin
   end
 end
 
-run_test("Style to_s returns correct SIN string") do
+run_test("Identifier to_s returns correct SIN string") do
   test_cases = [
     [:C, :first, "C"],
     [:c, :second, "c"],
@@ -135,74 +135,74 @@ run_test("Style to_s returns correct SIN string") do
   ]
 
   test_cases.each do |letter, side, expected|
-    style = Sashite::Sin::Style.new(letter, side)
-    result = style.to_s
+    identifier = Sashite::Sin::Identifier.new(letter, side)
+    result = identifier.to_s
 
     raise "#{letter}, #{side} should be #{expected}, got #{result}" unless result == expected
   end
 end
 
-run_test("Style side mutations return new instances") do
-  style = Sashite::Sin::Style.new(:C, :first)
+run_test("Identifier side mutations return new instances") do
+  identifier = Sashite::Sin::Identifier.new(:C, :first)
 
   # Test flip
-  flipped = style.flip
-  raise "flip should return new instance" if flipped.equal?(style)
-  raise "flipped style should have opposite side" unless flipped.side == :second
-  raise "flipped style should have lowercase letter" unless flipped.letter == :c
-  raise "original style should be unchanged" unless style.side == :first
+  flipped = identifier.flip
+  raise "flip should return new instance" if flipped.equal?(identifier)
+  raise "flipped identifier should have opposite side" unless flipped.side == :second
+  raise "flipped identifier should have lowercase letter" unless flipped.letter == :c
+  raise "original identifier should be unchanged" unless identifier.side == :first
 end
 
-run_test("Style attribute transformations") do
-  style = Sashite::Sin::Style.new(:C, :first)
+run_test("Identifier attribute transformations") do
+  identifier = Sashite::Sin::Identifier.new(:C, :first)
 
   # Test with_letter
-  s_style = style.with_letter(:S)
-  raise "with_letter should return new instance" if s_style.equal?(style)
-  raise "new style should have different letter" unless s_style.letter == :S
-  raise "new style should have same side" unless s_style.side == style.side
+  s_identifier = identifier.with_letter(:S)
+  raise "with_letter should return new instance" if s_identifier.equal?(identifier)
+  raise "new identifier should have different letter" unless s_identifier.letter == :S
+  raise "new identifier should have same side" unless s_identifier.side == identifier.side
 
   # Test with_side
-  black_chess = style.with_side(:second)
-  raise "with_side should return new instance" if black_chess.equal?(style)
-  raise "new style should have different side" unless black_chess.side == :second
-  raise "new style should have lowercase letter" unless black_chess.letter == :c
+  black_chess = identifier.with_side(:second)
+  raise "with_side should return new instance" if black_chess.equal?(identifier)
+  raise "new identifier should have different side" unless black_chess.side == :second
+  raise "new identifier should have lowercase letter" unless black_chess.letter == :c
 end
 
-run_test("Style immutability") do
-  style = Sashite::Sin::Style.new(:C, :first)
+run_test("Identifier immutability") do
+  identifier = Sashite::Sin::Identifier.new(:C, :first)
 
-  # Test that style is frozen
-  raise "style should be frozen" unless style.frozen?
+  # Test that identifier is frozen
+  raise "identifier should be frozen" unless identifier.frozen?
 
   # Test that mutations don't affect original
-  original_string = style.to_s
-  flipped = style.flip
+  original_string = identifier.to_s
+  flipped = identifier.flip
 
-  raise "original style should be unchanged after flip" unless style.to_s == original_string
-  raise "flipped style should be different" unless flipped.to_s == "c"
+  raise "original identifier should be unchanged after flip" unless identifier.to_s == original_string
+  raise "flipped identifier should be different" unless flipped.to_s == "c"
 end
 
-run_test("Style equality and hash") do
-  style1 = Sashite::Sin::Style.new(:C, :first)
-  style2 = Sashite::Sin::Style.new(:C, :first)
-  style3 = Sashite::Sin::Style.new(:c, :second)
-  style4 = Sashite::Sin::Style.new(:S, :first)
+run_test("Identifier equality and hash") do
+  identifier1 = Sashite::Sin::Identifier.new(:C, :first)
+  identifier2 = Sashite::Sin::Identifier.new(:C, :first)
+  identifier3 = Sashite::Sin::Identifier.new(:c, :second)
+  identifier4 = Sashite::Sin::Identifier.new(:S, :first)
 
   # Test equality
-  raise "identical styles should be equal" unless style1 == style2
-  raise "different side should not be equal" if style1 == style3
-  raise "different letter should not be equal" if style1 == style4
+  raise "identical identifiers should be equal" unless identifier1 == identifier2
+  raise "different side should not be equal" if identifier1 == identifier3
+  raise "different letter should not be equal" if identifier1 == identifier4
 
   # Test hash consistency
-  raise "equal styles should have same hash" unless style1.hash == style2.hash
+  raise "equal identifiers should have same hash" unless identifier1.hash == identifier2.hash
 
   # Test in hash/set
-  styles_set = Set.new([style1, style2, style3, style4])
-  raise "set should contain 3 unique styles" unless styles_set.size == 3
+  identifiers_set = Set.new([identifier1, identifier2, identifier3, identifier4])
+  raise "set should contain 3 unique identifiers" unless identifiers_set.size == 3
 end
 
-run_test("Style letter and side identification") do
+run_test("Identifier letter and side identification") do
   test_cases = [
     ["C", :C, :first, true, false],
     ["c", :c, :second, false, true],
@@ -211,59 +211,59 @@ run_test("Style letter and side identification") do
   ]
 
   test_cases.each do |sin_string, expected_letter, expected_side, is_first, is_second|
-    style = Sashite::Sin.parse(sin_string)
+    identifier = Sashite::Sin.parse(sin_string)
 
-    raise "#{sin_string}: wrong letter" unless style.letter == expected_letter
-    raise "#{sin_string}: wrong side" unless style.side == expected_side
-    raise "#{sin_string}: wrong first_player?" unless style.first_player? == is_first
-    raise "#{sin_string}: wrong second_player?" unless style.second_player? == is_second
+    raise "#{sin_string}: wrong letter" unless identifier.letter == expected_letter
+    raise "#{sin_string}: wrong side" unless identifier.side == expected_side
+    raise "#{sin_string}: wrong first_player?" unless identifier.first_player? == is_first
+    raise "#{sin_string}: wrong second_player?" unless identifier.second_player? == is_second
   end
 end
 
-run_test("Style same_letter? and same_side? methods") do
-  c_first = Sashite::Sin::Style.new(:C, :first)
-  c_second = Sashite::Sin::Style.new(:c, :second)
-  s_first = Sashite::Sin::Style.new(:S, :first)
-  s_second = Sashite::Sin::Style.new(:s, :second)
+run_test("Identifier same_letter? and same_side? methods") do
+  c_first = Sashite::Sin::Identifier.new(:C, :first)
+  c_second = Sashite::Sin::Identifier.new(:c, :second)
+  s_first = Sashite::Sin::Identifier.new(:S, :first)
+  s_second = Sashite::Sin::Identifier.new(:s, :second)
 
   # same_letter? tests (case-insensitive)
   raise "C and c should be same letter family" unless c_first.same_letter?(c_second)
   raise "C and S should not be same letter family" if c_first.same_letter?(s_first)
 
   # same_side? tests
-  raise "first player styles should be same side" unless c_first.same_side?(s_first)
-  raise "different side styles should not be same side" if c_first.same_side?(c_second)
+  raise "first player identifiers should be same side" unless c_first.same_side?(s_first)
+  raise "different side identifiers should not be same side" if c_first.same_side?(c_second)
 end
 
-run_test("Style transformation methods return self when appropriate") do
-  style = Sashite::Sin::Style.new(:C, :first)
+run_test("Identifier transformation methods return self when appropriate") do
+  identifier = Sashite::Sin::Identifier.new(:C, :first)
 
   # Test with_* methods that should return self
-  raise "with_letter with same letter should return self" unless style.with_letter(:C).equal?(style)
-  raise "with_side with same side should return self" unless style.with_side(:first).equal?(style)
+  raise "with_letter with same letter should return self" unless identifier.with_letter(:C).equal?(identifier)
+  raise "with_side with same side should return self" unless identifier.with_side(:first).equal?(identifier)
 end
 
-run_test("Style transformation chains") do
-  style = Sashite::Sin::Style.new(:C, :first)
+run_test("Identifier transformation chains") do
+  identifier = Sashite::Sin::Identifier.new(:C, :first)
 
   # Test flip then flip
-  flipped = style.flip
+  flipped = identifier.flip
   back_to_original = flipped.flip
-  raise "flip then flip should equal original" unless back_to_original == style
+  raise "flip then flip should equal original" unless back_to_original == identifier
 
   # Test complex chain
-  transformed = style.flip.with_letter(:S).flip
+  transformed = identifier.flip.with_letter(:S).flip
   raise "complex chain should work" unless transformed.to_s == "S"
-  raise "original should be unchanged" unless style.to_s == "C"
+  raise "original should be unchanged" unless identifier.to_s == "C"
 end
 
-run_test("Style error handling for invalid letters") do
+run_test("Identifier error handling for invalid letters") do
   # Invalid letters
   invalid_letters = [nil, "", "C", "chess", "CHESS", 1, [], :AA, :Aa, :"", :"1", :"1A"]
 
   invalid_letters.each do |letter|
     begin
-      Sashite::Sin::Style.new(letter, :first)
+      Sashite::Sin::Identifier.new(letter, :first)
       raise "Should have raised error for invalid letter #{letter.inspect}"
     rescue ArgumentError => e
       raise "Error message should mention invalid letter" unless e.message.include?("Letter must be")
@@ -275,7 +275,7 @@ run_test("Style error handling for invalid letters") do
 
   invalid_sides.each do |side|
     begin
-      Sashite::Sin::Style.new(:C, side)
+      Sashite::Sin::Identifier.new(:C, side)
       raise "Should have raised error for invalid side #{side.inspect}"
     rescue ArgumentError => e
       raise "Error message should mention invalid side" unless e.message.include?("Side must be")
@@ -283,7 +283,7 @@ run_test("Style error handling for invalid letters") do
   end
 end
 
-run_test("Style error handling for invalid SIN strings") do
+run_test("Identifier error handling for invalid SIN strings") do
   # Invalid SIN strings
   invalid_sins = ["", "Chess", "AA", "123", nil, Object]
 
@@ -298,75 +298,75 @@ run_test("Style error handling for invalid SIN strings") do
 end
 
 # Test letter family examples with new API
-run_test("Letter family styles with new API") do
+run_test("Letter family identifiers with new API") do
   # Chess family (C)
-  chess_first = Sashite::Sin.style(:C, :first)
+  chess_first = Sashite::Sin.identifier(:C, :first)
   raise "Chess first should be first player" unless chess_first.first_player?
   raise "Chess letter should be :C" unless chess_first.letter == :C
 
-  chess_second = Sashite::Sin.style(:c, :second)
+  chess_second = Sashite::Sin.identifier(:c, :second)
   raise "Chess second should be second player" unless chess_second.second_player?
   raise "Chess letter should be :c" unless chess_second.letter == :c
 
   # Shogi family (S)
-  shogi_first = Sashite::Sin.style(:S, :first)
+  shogi_first = Sashite::Sin.identifier(:S, :first)
   raise "Shogi letter should be :S" unless shogi_first.letter == :S
   raise "Shogi SIN should be S" unless shogi_first.to_s == "S"
 
   # Xiangqi family (X)
-  xiangqi_first = Sashite::Sin.style(:X, :first)
+  xiangqi_first = Sashite::Sin.identifier(:X, :first)
   raise "Xiangqi letter should be :X" unless xiangqi_first.letter == :X
   raise "Xiangqi SIN should be X" unless xiangqi_first.to_s == "X"
 end
 
 run_test("Cross-style transformations with new API") do
-  # Test that styles can be transformed across different letter families
-  style = Sashite::Sin.style(:C, :first)
+  # Test that identifiers can be transformed across different letter families
+  identifier = Sashite::Sin.identifier(:C, :first)
 
   # Chain transformations
-  transformed = style.flip.with_letter(:S).flip.with_letter(:X)
+  transformed = identifier.flip.with_letter(:S).flip.with_letter(:X)
   expected_final = "X"  # Should end up as first player X
 
   raise "Chained transformation should work" unless transformed.to_s == expected_final
-  raise "Original style should be unchanged" unless style.to_s == "C"
+  raise "Original identifier should be unchanged" unless identifier.to_s == "C"
 end
 
 # Test practical usage scenarios with new API
-run_test("Practical usage - style collections with new API") do
-  styles = [
-    Sashite::Sin.style(:C, :first),
-    Sashite::Sin.style(:S, :first),
-    Sashite::Sin.style(:X, :first),
-    Sashite::Sin.style(:c, :second)
+run_test("Practical usage - identifier collections with new API") do
+  identifiers = [
+    Sashite::Sin.identifier(:C, :first),
+    Sashite::Sin.identifier(:S, :first),
+    Sashite::Sin.identifier(:X, :first),
+    Sashite::Sin.identifier(:c, :second)
   ]
 
   # Filter by side
-  first_player_styles = styles.select(&:first_player?)
-  raise "Should have 3 first player styles" unless first_player_styles.size == 3
+  first_player_identifiers = identifiers.select(&:first_player?)
+  raise "Should have 3 first player identifiers" unless first_player_identifiers.size == 3
 
   # Group by letter family
-  by_letter_family = styles.group_by { |s| s.letter.to_s.upcase }
+  by_letter_family = identifiers.group_by { |i| i.letter.to_s.upcase }
   raise "Should have C letter family grouped" unless by_letter_family["C"].size == 2
 
   # Find specific letter families
-  c_styles = styles.select { |s| s.same_letter?(styles.first) }
-  raise "Should have 2 C family styles" unless c_styles.size == 2
+  c_identifiers = identifiers.select { |i| i.same_letter?(identifiers.first) }
+  raise "Should have 2 C family identifiers" unless c_identifiers.size == 2
 end
 
 run_test("Practical usage - game configuration with new API") do
   # Simulate multi-style match setup
-  white_style = Sashite::Sin.style(:C, :first)
-  black_style = Sashite::Sin.style(:s, :second)
+  white_identifier = Sashite::Sin.identifier(:C, :first)
+  black_identifier = Sashite::Sin.identifier(:s, :second)
 
-  raise "White should be first player" unless white_style.first_player?
-  raise "Black should be second player" unless black_style.second_player?
-  raise "Styles should have different letter families" unless !white_style.same_letter?(black_style)
-  raise "Styles should have different sides" unless !white_style.same_side?(black_style)
+  raise "White should be first player" unless white_identifier.first_player?
+  raise "Black should be second player" unless black_identifier.second_player?
+  raise "Identifiers should have different letter families" unless !white_identifier.same_letter?(black_identifier)
+  raise "Identifiers should have different sides" unless !white_identifier.same_side?(black_identifier)
 
-  # Test style switching
-  switched = white_style.with_letter(:S)
-  raise "Switched style should have S letter" unless switched.letter == :S
-  raise "Switched style should keep white's side" unless switched.side == white_style.side
+  # Test identifier switching
+  switched = white_identifier.with_letter(:S)
+  raise "Switched identifier should have S letter" unless switched.letter == :S
+  raise "Switched identifier should keep white's side" unless switched.side == white_identifier.side
 end
 
 # Test all 26 letters
@@ -375,23 +375,23 @@ run_test("All 26 ASCII letters work correctly") do
 
   letters.each do |letter|
     # Test parsing
-    style = Sashite::Sin.parse(letter)
-    raise "#{letter} should parse correctly" unless style.letter.to_s == letter
+    identifier = Sashite::Sin.parse(letter)
+    raise "#{letter} should parse correctly" unless identifier.letter.to_s == letter
 
     # Test side inference
     expected_side = letter == letter.upcase ? :first : :second
-    raise "#{letter} should have correct side" unless style.side == expected_side
+    raise "#{letter} should have correct side" unless identifier.side == expected_side
 
     # Test roundtrip
-    raise "#{letter} should roundtrip correctly" unless style.to_s == letter
+    raise "#{letter} should roundtrip correctly" unless identifier.to_s == letter
   end
 end
 
 run_test("Letter case transformations work correctly") do
   # Test all uppercase letters can flip to lowercase
   ("A".."Z").each do |upper|
-    style = Sashite::Sin.parse(upper)
-    flipped = style.flip
+    identifier = Sashite::Sin.parse(upper)
+    flipped = identifier.flip
     expected_lower = upper.downcase
 
     raise "#{upper} should flip to #{expected_lower}" unless flipped.to_s == expected_lower
@@ -400,8 +400,8 @@ run_test("Letter case transformations work correctly") do
 
   # Test all lowercase letters can flip to uppercase
   ("a".."z").each do |lower|
-    style = Sashite::Sin.parse(lower)
-    flipped = style.flip
+    identifier = Sashite::Sin.parse(lower)
+    flipped = identifier.flip
     expected_upper = lower.upcase
 
     raise "#{lower} should flip to #{expected_upper}" unless flipped.to_s == expected_upper
@@ -415,11 +415,11 @@ run_test("Same letter family detection works correctly") do
   ]
 
   test_pairs.each do |upper, lower|
-    style1 = Sashite::Sin.parse(upper)
-    style2 = Sashite::Sin.parse(lower)
+    identifier1 = Sashite::Sin.parse(upper)
+    identifier2 = Sashite::Sin.parse(lower)
 
-    raise "#{upper} and #{lower} should be same letter family" unless style1.same_letter?(style2)
-    raise "#{upper} and #{lower} should not be same side" if style1.same_side?(style2)
+    raise "#{upper} and #{lower} should be same letter family" unless identifier1.same_letter?(identifier2)
+    raise "#{upper} and #{lower} should not be same side" if identifier1.same_side?(identifier2)
   end
 end
 
@@ -443,7 +443,7 @@ end
 
 # Test constants
 run_test("Regular expression constant is correctly defined") do
-  regex = Sashite::Sin::Style::SIN_PATTERN
+  regex = Sashite::Sin::Identifier::SIN_PATTERN
 
   raise "SIN_PATTERN should match valid SINs" unless "C".match?(regex)
   raise "SIN_PATTERN should match lowercase SINs" unless "c".match?(regex)
@@ -455,9 +455,9 @@ end
 run_test("Performance - repeated operations with new API") do
   # Test performance with many repeated calls
   1000.times do
-    style = Sashite::Sin.style(:C, :first)
-    flipped = style.flip
-    renamed = style.with_letter(:S)
+    identifier = Sashite::Sin.identifier(:C, :first)
+    flipped = identifier.flip
+    renamed = identifier.with_letter(:S)
 
     raise "Performance test failed" unless Sashite::Sin.valid?("C")
     raise "Performance test failed" unless flipped.second_player?
@@ -466,15 +466,15 @@ run_test("Performance - repeated operations with new API") do
 end
 
 # Test constants and validation
-run_test("Style class constants are properly defined") do
-  style_class = Sashite::Sin::Style
+run_test("Identifier class constants are properly defined") do
+  identifier_class = Sashite::Sin::Identifier
 
   # Test side constants
-  raise "FIRST_PLAYER should be :first" unless style_class::FIRST_PLAYER == :first
-  raise "SECOND_PLAYER should be :second" unless style_class::SECOND_PLAYER == :second
+  raise "FIRST_PLAYER should be :first" unless identifier_class::FIRST_PLAYER == :first
+  raise "SECOND_PLAYER should be :second" unless identifier_class::SECOND_PLAYER == :second
 
   # Test valid sides
-  raise "VALID_SIDES should contain correct values" unless style_class::VALID_SIDES == [:first, :second]
+  raise "VALID_SIDES should contain correct values" unless identifier_class::VALID_SIDES == [:first, :second]
 end
 
 # Test roundtrip parsing
@@ -487,8 +487,8 @@ run_test("Roundtrip parsing consistency") do
   ]
 
   test_cases.each do |letter, side|
-    # Create style -> to_s -> parse -> compare
-    original = Sashite::Sin::Style.new(letter, side)
+    # Create identifier -> to_s -> parse -> compare
+    original = Sashite::Sin::Identifier.new(letter, side)
     sin_string = original.to_s
     parsed = Sashite::Sin.parse(sin_string)
 

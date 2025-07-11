@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "sin/style"
+require_relative "sin/identifier"
 
 module Sashite
   # SIN (Style Identifier Notation) implementation for Ruby
@@ -33,33 +33,33 @@ module Sashite
     #   Sashite::Sin.valid?("CHESS") # => false (multi-character)
     #   Sashite::Sin.valid?("1") # => false (not a letter)
     def self.valid?(sin_string)
-      Style.valid?(sin_string)
+      Identifier.valid?(sin_string)
     end
 
-    # Parse an SIN string into a Style object
+    # Parse an SIN string into an Identifier object
     #
     # @param sin_string [String] SIN notation string
-    # @return [Sin::Style] parsed style object with letter and side attributes
+    # @return [Sin::Identifier] parsed identifier object with letter and side attributes
     # @raise [ArgumentError] if the SIN string is invalid
     # @example Parse different SIN formats
-    #   Sashite::Sin.parse("C") # => #<Sin::Style letter=:C side=:first>
-    #   Sashite::Sin.parse("c") # => #<Sin::Style letter=:c side=:second>
-    #   Sashite::Sin.parse("S") # => #<Sin::Style letter=:S side=:first>
+    #   Sashite::Sin.parse("C") # => #<Sin::Identifier letter=:C side=:first>
+    #   Sashite::Sin.parse("c") # => #<Sin::Identifier letter=:c side=:second>
+    #   Sashite::Sin.parse("S") # => #<Sin::Identifier letter=:S side=:first>
     def self.parse(sin_string)
-      Style.parse(sin_string)
+      Identifier.parse(sin_string)
     end
 
-    # Create a new style instance
+    # Create a new identifier instance
     #
     # @param letter [Symbol] style letter (single ASCII letter as symbol)
     # @param side [Symbol] player side (:first or :second)
-    # @return [Sin::Style] new immutable style instance
+    # @return [Sin::Identifier] new immutable identifier instance
     # @raise [ArgumentError] if parameters are invalid
-    # @example Create styles directly
-    #   Sashite::Sin.style(:C, :first)  # => #<Sin::Style letter=:C side=:first>
-    #   Sashite::Sin.style(:s, :second) # => #<Sin::Style letter=:s side=:second>
-    def self.style(letter, side)
-      Style.new(letter, side)
+    # @example Create identifiers directly
+    #   Sashite::Sin.identifier(:C, :first)  # => #<Sin::Identifier letter=:C side=:first>
+    #   Sashite::Sin.identifier(:s, :second) # => #<Sin::Identifier letter=:s side=:second>
+    def self.identifier(letter, side)
+      Identifier.new(letter, side)
     end
   end
 end

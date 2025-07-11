@@ -33,15 +33,15 @@ gem install sashite-sin
 ```ruby
 require "sashite/sin"
 
-# Parse SIN strings into style objects
-style = Sashite::Sin.parse("C")           # => #<Sin::Style letter=:C side=:first>
-style.to_s                                # => "C"
-style.letter                              # => :C
-style.side                                # => :first
+# Parse SIN strings into identifier objects
+identifier = Sashite::Sin.parse("C")           # => #<Sin::Identifier letter=:C side=:first>
+identifier.to_s                                # => "C"
+identifier.letter                              # => :C
+identifier.side                                # => :first
 
-# Create styles directly
-style = Sashite::Sin.style(:C, :first)           # => #<Sin::Style letter=:C side=:first>
-style = Sashite::Sin::Style.new(:c, :second)     # => #<Sin::Style letter=:c side=:second>
+# Create identifiers directly
+identifier = Sashite::Sin.identifier(:C, :first)           # => #<Sin::Identifier letter=:C side=:first>
+identifier = Sashite::Sin::Identifier.new(:c, :second)     # => #<Sin::Identifier letter=:c side=:second>
 
 # Validate SIN strings
 Sashite::Sin.valid?("C")                 # => true
@@ -50,38 +50,38 @@ Sashite::Sin.valid?("1")                 # => false (not a letter)
 Sashite::Sin.valid?("CC")                # => false (not single character)
 ```
 
-### Style Transformations
+### Identifier Transformations
 
 ```ruby
 # All transformations return new immutable instances
-style = Sashite::Sin.parse("C")
+identifier = Sashite::Sin.parse("C")
 
 # Flip player assignment
-flipped = style.flip                      # => #<Sin::Style letter=:c side=:second>
-flipped.to_s                              # => "c"
+flipped = identifier.flip # => #<Sin::Identifier letter=:c side=:second>
+flipped.to_s # => "c"
 
 # Change letter
-changed = style.with_letter(:S)           # => #<Sin::Style letter=:S side=:first>
-changed.to_s                              # => "S"
+changed = identifier.with_letter(:S) # => #<Sin::Identifier letter=:S side=:first>
+changed.to_s # => "S"
 
 # Change side
-other_side = style.with_side(:second)     # => #<Sin::Style letter=:c side=:second>
-other_side.to_s                           # => "c"
+other_side = identifier.with_side(:second) # => #<Sin::Identifier letter=:c side=:second>
+other_side.to_s # => "c"
 
 # Chain transformations
-result = style.flip.with_letter(:M)       # => #<Sin::Style letter=:m side=:second>
-result.to_s                               # => "m"
+result = identifier.flip.with_letter(:M) # => #<Sin::Identifier letter=:m side=:second>
+result.to_s # => "m"
 ```
 
 ### Player and Style Queries
 
 ```ruby
-style = Sashite::Sin.parse("C")
+identifier = Sashite::Sin.parse("C")
 opposite = Sashite::Sin.parse("s")
 
 # Player identification
-style.first_player?                       # => true
-style.second_player?                      # => false
+identifier.first_player?                       # => true
+identifier.second_player?                      # => false
 opposite.first_player?                    # => false
 opposite.second_player?                   # => true
 
@@ -95,23 +95,23 @@ chess1.same_side?(shogi)                  # => true (both first player)
 chess1.same_letter?(shogi)                # => false (different letters)
 ```
 
-### Style Collections
+### Identifier Collections
 
 ```ruby
-# Working with multiple styles
-styles = %w[C c S s M m].map { |sin| Sashite::Sin.parse(sin) }
+# Working with multiple identifiers
+identifiers = %w[C c S s M m].map { |sin| Sashite::Sin.parse(sin) }
 
 # Filter by player
-first_player_styles = styles.select(&:first_player?)
-first_player_styles.map(&:to_s) # => ["C", "S", "M"]
+first_player_identifiers = identifiers.select(&:first_player?)
+first_player_identifiers.map(&:to_s) # => ["C", "S", "M"]
 
 # Group by letter family
-by_letter = styles.group_by { |s| s.letter.to_s.upcase }
+by_letter = identifiers.group_by { |i| i.letter.to_s.upcase }
 by_letter["C"].size # => 2 (both C and c)
 
 # Find specific combinations
-chess_styles = styles.select { |s| s.letter.to_s.upcase == "C" }
-chess_styles.map(&:to_s) # => ["C", "c"]
+chess_identifiers = identifiers.select { |i| i.letter.to_s.upcase == "C" }
+chess_identifiers.map(&:to_s) # => ["C", "c"]
 ```
 
 ## Format Specification
@@ -148,15 +148,15 @@ The SIN specification is rule-agnostic and does not define specific letter assig
 ### Traditional Game Families
 
 ```ruby
-# Chess family styles
+# Chess family identifiers
 chess_white = Sashite::Sin.parse("C")    # First player, Chess family
 chess_black = Sashite::Sin.parse("c")    # Second player, Chess family
 
-# Shōgi family styles
+# Shōgi family identifiers
 shogi_sente = Sashite::Sin.parse("S")    # First player, Shōgi family
 shogi_gote = Sashite::Sin.parse("s")     # Second player, Shōgi family
 
-# Xiangqi family styles
+# Xiangqi family identifiers
 xiangqi_red = Sashite::Sin.parse("X")    # First player, Xiangqi family
 xiangqi_black = Sashite::Sin.parse("x")  # Second player, Xiangqi family
 ```
@@ -172,9 +172,9 @@ def create_hybrid_match
   ]
 end
 
-styles = create_hybrid_match
-styles[0].same_side?(styles[1])         # => false (different players)
-styles[0].same_letter?(styles[1])       # => false (different families)
+identifiers = create_hybrid_match
+identifiers[0].same_side?(identifiers[1])         # => false (different players)
+identifiers[0].same_letter?(identifiers[1])       # => false (different families)
 ```
 
 ### Variant Families
@@ -195,14 +195,14 @@ makruk_black.to_s                       # => "m"
 ### Main Module Methods
 
 - `Sashite::Sin.valid?(sin_string)` - Check if string is valid SIN notation
-- `Sashite::Sin.parse(sin_string)` - Parse SIN string into Style object
-- `Sashite::Sin.style(letter, side)` - Create style instance directly
+- `Sashite::Sin.parse(sin_string)` - Parse SIN string into Identifier object
+- `Sashite::Sin.identifier(letter, side)` - Create identifier instance directly
 
-### Style Class
+### Identifier Class
 
 #### Creation and Parsing
-- `Sashite::Sin::Style.new(letter, side)` - Create style instance
-- `Sashite::Sin::Style.parse(sin_string)` - Parse SIN string
+- `Sashite::Sin::Identifier.new(letter, side)` - Create identifier instance
+- `Sashite::Sin::Identifier.parse(sin_string)` - Parse SIN string
 
 #### Attribute Access
 - `#letter` - Get style letter (symbol :A through :z)
@@ -210,25 +210,25 @@ makruk_black.to_s                       # => "m"
 - `#to_s` - Convert to SIN string representation
 
 #### Player Queries
-- `#first_player?` - Check if first player style
-- `#second_player?` - Check if second player style
+- `#first_player?` - Check if first player identifier
+- `#second_player?` - Check if second player identifier
 
 #### Transformations (immutable - return new instances)
 - `#flip` - Switch player assignment
-- `#with_letter(new_letter)` - Create style with different letter
-- `#with_side(new_side)` - Create style with different side
+- `#with_letter(new_letter)` - Create identifier with different letter
+- `#with_side(new_side)` - Create identifier with different side
 
 #### Comparison Methods
 - `#same_letter?(other)` - Check if same style letter (case-insensitive)
 - `#same_side?(other)` - Check if same player side
 - `#==(other)` - Full equality comparison
 
-### Style Class Constants
+### Identifier Class Constants
 
-- `Sashite::Sin::Style::FIRST_PLAYER` - Symbol for first player (:first)
-- `Sashite::Sin::Style::SECOND_PLAYER` - Symbol for second player (:second)
-- `Sashite::Sin::Style::VALID_SIDES` - Array of valid sides
-- `Sashite::Sin::Style::SIN_PATTERN` - Regular expression for SIN validation
+- `Sashite::Sin::Identifier::FIRST_PLAYER` - Symbol for first player (:first)
+- `Sashite::Sin::Identifier::SECOND_PLAYER` - Symbol for second player (:second)
+- `Sashite::Sin::Identifier::VALID_SIDES` - Array of valid sides
+- `Sashite::Sin::Identifier::SIN_PATTERN` - Regular expression for SIN validation
 
 ## Advanced Usage
 
@@ -257,11 +257,11 @@ letter_a_first.same_side?(letter_a_second)    # => false
 
 ```ruby
 # All transformations return new instances
-original = Sashite::Sin.style(:C, :first)
+original = Sashite::Sin.identifier(:C, :first)
 flipped = original.flip
 changed_letter = original.with_letter(:S)
 
-# Original style is never modified
+# Original identifier is never modified
 original.to_s                           # => "C" (unchanged)
 flipped.to_s                            # => "c"
 changed_letter.to_s                     # => "S"
@@ -293,7 +293,7 @@ Following the [Sashité Protocol](https://sashite.dev/protocol/):
 - **Rule-agnostic**: Independent of specific game mechanics
 - **Minimal overhead**: Single character per style-player combination
 - **Canonical representation**: Each style-player combination has exactly one SIN identifier
-- **Immutable**: All style instances are frozen and transformations return new objects
+- **Immutable**: All identifier instances are frozen and transformations return new objects
 - **Functional**: Pure functions with no side effects
 
 ## Related Specifications
