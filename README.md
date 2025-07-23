@@ -11,7 +11,7 @@
 
 SIN (Style Identifier Notation) provides a compact, ASCII-based format for identifying **styles** in abstract strategy board games. SIN uses single-character identifiers with case encoding to represent both style identity and player assignment simultaneously.
 
-This gem implements the [SIN Specification v1.0.0](https://sashite.dev/specs/sin/1.0.0/), providing a rule-agnostic notation system for style identification in board games.
+This gem implements the [SIN Specification v1.0.0](https://sashite.dev/specs/sin/1.0.0/) exactly, providing a rule-agnostic notation system for style identification in board games.
 
 ## Installation
 
@@ -34,14 +34,15 @@ gem install sashite-sin
 require "sashite/sin"
 
 # Parse SIN strings into identifier objects
-identifier = Sashite::Sin.parse("C")           # => #<Sin::Identifier letter=:C side=:first>
+identifier = Sashite::Sin.parse("C")           # Family=:C, Side=:first
 identifier.to_s                                # => "C"
-identifier.letter                              # => :C
+identifier.family                              # => :C
 identifier.side                                # => :first
+identifier.letter                              # => "C" (combined representation)
 
 # Create identifiers directly
-identifier = Sashite::Sin.identifier(:C, :first)           # => #<Sin::Identifier letter=:C side=:first>
-identifier = Sashite::Sin::Identifier.new(:c, :second)     # => #<Sin::Identifier letter=:c side=:second>
+identifier = Sashite::Sin.identifier(:C, :first)           # Family=:C, Side=:first
+identifier = Sashite::Sin::Identifier.new(:C, :second)     # Family=:C, Side=:second
 
 # Validate SIN strings
 Sashite::Sin.valid?("C")                 # => true
@@ -57,19 +58,19 @@ Sashite::Sin.valid?("CC")                # => false (not single character)
 identifier = Sashite::Sin.parse("C")
 
 # Flip player assignment
-flipped = identifier.flip # => #<Sin::Identifier letter=:c side=:second>
+flipped = identifier.flip # Family=:C, Side=:second
 flipped.to_s # => "c"
 
-# Change letter
-changed = identifier.with_letter(:S) # => #<Sin::Identifier letter=:S side=:first>
+# Change family
+changed = identifier.with_family(:S) # Family=:S, Side=:first
 changed.to_s # => "S"
 
 # Change side
-other_side = identifier.with_side(:second) # => #<Sin::Identifier letter=:c side=:second>
+other_side = identifier.with_side(:second) # Family=:C, Side=:second
 other_side.to_s # => "c"
 
 # Chain transformations
-result = identifier.flip.with_letter(:M) # => #<Sin::Identifier letter=:m side=:second>
+result = identifier.flip.with_family(:M) # Family=:M, Side=:second
 result.to_s # => "m"
 ```
 
@@ -82,17 +83,17 @@ opposite = Sashite::Sin.parse("s")
 # Player identification
 identifier.first_player?                       # => true
 identifier.second_player?                      # => false
-opposite.first_player?                    # => false
-opposite.second_player?                   # => true
+opposite.first_player?                         # => false
+opposite.second_player?                        # => true
 
-# Letter comparison
+# Family and side comparison
 chess1 = Sashite::Sin.parse("C")
 chess2 = Sashite::Sin.parse("c")
 shogi = Sashite::Sin.parse("S")
 
-chess1.same_letter?(chess2)               # => true (both use letter C)
+chess1.same_family?(chess2)               # => true (both Chess family)
 chess1.same_side?(shogi)                  # => true (both first player)
-chess1.same_letter?(shogi)                # => false (different letters)
+chess1.same_family?(shogi)                # => false (different families)
 ```
 
 ### Identifier Collections
@@ -105,12 +106,12 @@ identifiers = %w[C c S s M m].map { |sin| Sashite::Sin.parse(sin) }
 first_player_identifiers = identifiers.select(&:first_player?)
 first_player_identifiers.map(&:to_s) # => ["C", "S", "M"]
 
-# Group by letter family
-by_letter = identifiers.group_by { |i| i.letter.to_s.upcase }
-by_letter["C"].size # => 2 (both C and c)
+# Group by family
+by_family = identifiers.group_by(&:family)
+by_family[:C].size # => 2 (both C and c)
 
-# Find specific combinations
-chess_identifiers = identifiers.select { |i| i.letter.to_s.upcase == "C" }
+# Find specific families
+chess_identifiers = identifiers.select { |i| i.family == :C }
 chess_identifiers.map(&:to_s) # => ["C", "c"]
 ```
 
@@ -136,35 +137,60 @@ chess_identifiers.map(&:to_s) # => ["C", "c"]
 
 ### Style Attribute Mapping
 
+SIN encodes style attributes using the following correspondence:
+
 | Style Attribute | SIN Encoding | Examples |
 |-----------------|--------------|----------|
-| **Style Family** | Letter choice | `C`/`c` = Chess family |
-| **Player Assignment** | Letter case | `C` = First player, `c` = Second player |
+| **Family** | Style family symbol | `:C`, `:S`, `:X` |
+| **Side** | Player assignment | `:first`, `:second` |
+| **Letter** | Combined representation | `"C"`, `"c"`, `"S"`, `"s"` |
 
-## Game Examples
+#### Dual-Purpose Encoding
 
-The SIN specification is rule-agnostic and does not define specific letter assignments. However, here are common usage patterns:
+The **Letter** combines two distinct semantic components:
+- **Style Family**: The underlying family symbol (:A-:Z), representing the game tradition or rule system
+- **Player Assignment**: The side (:first or :second), encoded as case in the letter representation
 
-### Traditional Game Families
+**Examples**:
+- Family `:C` + Side `:first` → Letter `"C"` (Chess, First player)
+- Family `:C` + Side `:second` → Letter `"c"` (Chess, Second player)
+- Family `:S` + Side `:first` → Letter `"S"` (Shōgi, First player)
+- Family `:S` + Side `:second` → Letter `"s"` (Shōgi, Second player)
+
+## Traditional Game Style Examples
+
+The SIN specification is rule-agnostic and does not define specific letter assignments. However, here are common usage patterns following [SIN Examples](https://sashite.dev/specs/sin/1.0.0/examples/):
 
 ```ruby
-# Chess family identifiers
-chess_white = Sashite::Sin.parse("C")    # First player, Chess family
-chess_black = Sashite::Sin.parse("c")    # Second player, Chess family
+# Chess (8×8 board)
+chess_white = Sashite::Sin.parse("C")    # First player (White pieces)
+chess_black = Sashite::Sin.parse("c")    # Second player (Black pieces)
 
-# Shōgi family identifiers
-shogi_sente = Sashite::Sin.parse("S")    # First player, Shōgi family
-shogi_gote = Sashite::Sin.parse("s")     # Second player, Shōgi family
+# Shōgi (9×9 board)
+shogi_sente = Sashite::Sin.parse("S")    # First player (Sente 先手)
+shogi_gote = Sashite::Sin.parse("s")     # Second player (Gote 後手)
 
-# Xiangqi family identifiers
-xiangqi_red = Sashite::Sin.parse("X")    # First player, Xiangqi family
-xiangqi_black = Sashite::Sin.parse("x")  # Second player, Xiangqi family
+# Xiangqi (9×10 board)
+xiangqi_red = Sashite::Sin.parse("X")    # First player (Red pieces)
+xiangqi_black = Sashite::Sin.parse("x")  # Second player (Black pieces)
+
+# Makruk (8×8 board)
+makruk_white = Sashite::Sin.parse("M")   # First player (White pieces)
+makruk_black = Sashite::Sin.parse("m")   # Second player (Black pieces)
+
+# Janggi (9×10 board)
+janggi_cho = Sashite::Sin.parse("J")     # First player (Cho 초)
+janggi_han = Sashite::Sin.parse("j")     # Second player (Han 한)
 ```
 
-### Cross-Style Scenarios
+## Cross-Style Scenarios
 
 ```ruby
-# Different families in one match
+# Chess vs. Ōgi Match (both 8×8 compatible)
+chess_white = Sashite::Sin.parse("C")    # Chess style, first player
+ogi_black = Sashite::Sin.parse("o")      # Ōgi style, second player
+
+# Cross-Style Match Setup
 def create_hybrid_match
   [
     Sashite::Sin.parse("C"),             # First player uses Chess family
@@ -173,22 +199,22 @@ def create_hybrid_match
 end
 
 identifiers = create_hybrid_match
-identifiers[0].same_side?(identifiers[1])         # => false (different players)
-identifiers[0].same_letter?(identifiers[1])       # => false (different families)
+identifiers[0].same_side?(identifiers[1])    # => false (different players)
+identifiers[0].same_family?(identifiers[1])  # => false (different families)
 ```
 
-### Variant Families
+## System Constraints
 
-```ruby
-# Different letters can represent variants within traditions
-makruk = Sashite::Sin.parse("M")        # Makruk (Thai Chess) family
-janggi = Sashite::Sin.parse("J")        # Janggi (Korean Chess) family
-ogi = Sashite::Sin.parse("O")           # Ōgi (王棋) family
+### Character Limitation
+SIN provides **26 possible identifiers** per player using ASCII letters (A-Z, a-z).
 
-# Each family can have both players
-makruk_black = makruk.flip              # Second player Makruk
-makruk_black.to_s                       # => "m"
-```
+### Player Limitation
+SIN supports exactly **two players** through case distinction:
+- **First player**: Uppercase letters (A-Z) → `:first`
+- **Second player**: Lowercase letters (a-z) → `:second`
+
+### Context Dependency
+The specific SIN assignment for a style may vary between different game contexts based on collision avoidance, historical precedence, and community conventions.
 
 ## API Reference
 
@@ -196,17 +222,18 @@ makruk_black.to_s                       # => "m"
 
 - `Sashite::Sin.valid?(sin_string)` - Check if string is valid SIN notation
 - `Sashite::Sin.parse(sin_string)` - Parse SIN string into Identifier object
-- `Sashite::Sin.identifier(letter, side)` - Create identifier instance directly
+- `Sashite::Sin.identifier(family, side)` - Create identifier instance directly
 
 ### Identifier Class
 
 #### Creation and Parsing
-- `Sashite::Sin::Identifier.new(letter, side)` - Create identifier instance
+- `Sashite::Sin::Identifier.new(family, side)` - Create identifier instance
 - `Sashite::Sin::Identifier.parse(sin_string)` - Parse SIN string
 
 #### Attribute Access
-- `#letter` - Get style letter (symbol :A through :z)
+- `#family` - Get style family (symbol :A through :Z)
 - `#side` - Get player side (:first or :second)
+- `#letter` - Get combined letter representation (string)
 - `#to_s` - Convert to SIN string representation
 
 #### Player Queries
@@ -215,42 +242,38 @@ makruk_black.to_s                       # => "m"
 
 #### Transformations (immutable - return new instances)
 - `#flip` - Switch player assignment
-- `#with_letter(new_letter)` - Create identifier with different letter
+- `#with_family(new_family)` - Create identifier with different family
 - `#with_side(new_side)` - Create identifier with different side
 
 #### Comparison Methods
-- `#same_letter?(other)` - Check if same style letter (case-insensitive)
+- `#same_family?(other)` - Check if same style family
 - `#same_side?(other)` - Check if same player side
 - `#==(other)` - Full equality comparison
+- `#same_letter?(other)` - Alias for `same_family?` (deprecated)
 
-### Identifier Class Constants
+### Constants
 
-- `Sashite::Sin::Identifier::FIRST_PLAYER` - Symbol for first player (:first)
-- `Sashite::Sin::Identifier::SECOND_PLAYER` - Symbol for second player (:second)
+- `Sashite::Sin::Identifier::FIRST_PLAYER` - Symbol for first player (`:first`)
+- `Sashite::Sin::Identifier::SECOND_PLAYER` - Symbol for second player (`:second`)
+- `Sashite::Sin::Identifier::VALID_FAMILIES` - Array of valid families (`:A` to `:Z`)
 - `Sashite::Sin::Identifier::VALID_SIDES` - Array of valid sides
 - `Sashite::Sin::Identifier::SIN_PATTERN` - Regular expression for SIN validation
 
 ## Advanced Usage
 
-### Letter Case and Side Mapping
+### Family and Side Separation
 
 ```ruby
-# SIN encodes player assignment through case
-upper_case_letters = ("A".."Z").map { |letter| Sashite::Sin.parse(letter) }
-lower_case_letters = ("a".."z").map { |letter| Sashite::Sin.parse(letter) }
+# Clear separation of concerns
+identifier = Sashite::Sin.parse("C")
+identifier.family  # => :C (Style Family - invariant)
+identifier.side    # => :first (Player Assignment)
+identifier.letter  # => "C" (Combined representation)
 
-# All uppercase letters are first player
-upper_case_letters.all?(&:first_player?) # => true
-
-# All lowercase letters are second player
-lower_case_letters.all?(&:second_player?) # => true
-
-# Letter families are related by case
-letter_a_first = Sashite::Sin.parse("A")
-letter_a_second = Sashite::Sin.parse("a")
-
-letter_a_first.same_letter?(letter_a_second)  # => true
-letter_a_first.same_side?(letter_a_second)    # => false
+# Transformations are explicit
+chess_white = Sashite::Sin.identifier(:C, :first)
+shogi_white = chess_white.with_family(:S) # Change family, keep side
+chess_black = chess_white.with_side(:second) # Change side, keep family
 ```
 
 ### Immutable Transformations
@@ -259,39 +282,29 @@ letter_a_first.same_side?(letter_a_second)    # => false
 # All transformations return new instances
 original = Sashite::Sin.identifier(:C, :first)
 flipped = original.flip
-changed_letter = original.with_letter(:S)
+changed_family = original.with_family(:S)
 
 # Original identifier is never modified
-original.to_s                           # => "C" (unchanged)
-flipped.to_s                            # => "c"
-changed_letter.to_s                     # => "S"
+original.to_s         # => "C" (unchanged)
+flipped.to_s          # => "c"
+changed_family.to_s   # => "S"
 
 # Transformations can be chained
-result = original.flip.with_letter(:M).flip
+result = original.flip.with_family(:M).flip
 result.to_s # => "M"
 ```
 
-## Protocol Mapping
-
-Following the [Sashité Protocol](https://sashite.dev/protocol/):
-
-| Protocol Attribute | SIN Encoding | Examples | Notes |
-|-------------------|--------------|----------|-------|
-| **Style Family** | Letter choice | `C`, `S`, `X` | Rule-agnostic letter assignment |
-| **Player Assignment** | Case encoding | `C` = First player, `c` = Second player | Case determines side |
-
-## System Constraints
-
-- **26 possible identifiers** per player using ASCII letters (A-Z, a-z)
-- **Exactly 2 players** through case distinction
-- **Single character** per style-player combination
-- **Rule-agnostic** - no predefined letter meanings
-
 ## Design Properties
+
+Following the SIN v1.0.0 specification, this implementation provides:
 
 - **ASCII compatibility**: Maximum portability across systems
 - **Rule-agnostic**: Independent of specific game mechanics
 - **Minimal overhead**: Single character per style-player combination
+- **Flexible collision resolution**: Systematic approaches for identifier conflicts
+- **Semantic clarity**: Distinct concepts for Family, Side, and Letter
+- **SNN coordination**: Works harmoniously with formal style naming
+- **Context-aware**: Adapts to avoid conflicts within specific game scenarios
 - **Canonical representation**: Each style-player combination has exactly one SIN identifier
 - **Immutable**: All identifier instances are frozen and transformations return new objects
 - **Functional**: Pure functions with no side effects
@@ -300,16 +313,13 @@ Following the [Sashité Protocol](https://sashite.dev/protocol/):
 
 - [SIN Specification v1.0.0](https://sashite.dev/specs/sin/1.0.0/) - Complete technical specification
 - [SIN Examples](https://sashite.dev/specs/sin/1.0.0/examples/) - Practical implementation examples
+- [Style Name Notation (SNN)](https://sashite.dev/specs/snn/) - Formal naming for game styles
 - [Sashité Protocol](https://sashite.dev/protocol/) - Conceptual foundation for abstract strategy board games
-- [PIN](https://sashite.dev/specs/pin/) - Piece Identifier Notation
-- [PNN](https://sashite.dev/specs/pnn/) - Piece Name Notation (style-aware piece representation)
-- [QPI](https://sashite.dev/specs/qpi/) - Qualified Piece Identifier
 
 ## Documentation
 
 - [Official SIN Specification v1.0.0](https://sashite.dev/specs/sin/1.0.0/)
 - [SIN Examples Documentation](https://sashite.dev/specs/sin/1.0.0/examples/)
-- [Sashité Protocol Foundation](https://sashite.dev/protocol/)
 - [API Documentation](https://rubydoc.info/github/sashite/sin.rb/main)
 
 ## Development
@@ -328,16 +338,6 @@ ruby test.rb
 # Generate documentation
 yard doc
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Add tests for your changes
-4. Ensure all tests pass (`ruby test.rb`)
-5. Commit your changes (`git commit -am 'Add new feature'`)
-6. Push to the branch (`git push origin feature/new-feature`)
-7. Create a Pull Request
 
 ## License
 

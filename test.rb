@@ -8,7 +8,7 @@ SimpleCov.start
 # Tests for Sashite::Sin (Style Identifier Notation)
 #
 # Tests the SIN implementation for Ruby, focusing on the modern object-oriented API
-# with the Identifier class using letter-based attributes conforming to SIN v1.0.0 specification.
+# with the Identifier class using family-based attributes conforming to SIN v1.0.0 specification.
 #
 # This test assumes the existence of:
 # - lib/sashite-sin.rb
@@ -81,44 +81,44 @@ run_test("Module identifier factory method creates correct instances") do
   identifier = Sashite::Sin.identifier(:C, :first)
 
   raise "identifier factory should return Identifier instance" unless identifier.is_a?(Sashite::Sin::Identifier)
-  raise "identifier should have correct letter" unless identifier.letter == :C
+  raise "identifier should have correct family" unless identifier.family == :C
   raise "identifier should have correct side" unless identifier.side == :first
   raise "identifier should have correct SIN string" unless identifier.to_s == "C"
 end
 
-# Test the Identifier class with letter-based API
-run_test("Identifier.parse creates correct instances with letter attributes") do
+# Test the Identifier class with family-based API
+run_test("Identifier.parse creates correct instances with family attributes") do
   test_cases = {
-    "C" => { letter: :C, side: :first },
-    "c" => { letter: :c, side: :second },
-    "S" => { letter: :S, side: :first },
-    "s" => { letter: :s, side: :second },
-    "X" => { letter: :X, side: :first },
-    "x" => { letter: :x, side: :second }
+    "C" => { family: :C, side: :first },
+    "c" => { family: :C, side: :second },
+    "S" => { family: :S, side: :first },
+    "s" => { family: :S, side: :second },
+    "X" => { family: :X, side: :first },
+    "x" => { family: :X, side: :second }
   }
 
   test_cases.each do |sin_string, expected|
     identifier = Sashite::Sin.parse(sin_string)
 
-    raise "#{sin_string}: wrong letter" unless identifier.letter == expected[:letter]
+    raise "#{sin_string}: wrong family" unless identifier.family == expected[:family]
     raise "#{sin_string}: wrong side" unless identifier.side == expected[:side]
   end
 end
 
-run_test("Identifier constructor with letter parameters") do
+run_test("Identifier constructor with family parameters") do
   test_cases = [
     [:C, :first, "C"],
-    [:c, :second, "c"],
+    [:C, :second, "c"],
     [:S, :first, "S"],
-    [:s, :second, "s"],
+    [:S, :second, "s"],
     [:X, :first, "X"],
-    [:x, :second, "x"]
+    [:X, :second, "x"]
   ]
 
-  test_cases.each do |letter, side, expected_sin|
-    identifier = Sashite::Sin::Identifier.new(letter, side)
+  test_cases.each do |family, side, expected_sin|
+    identifier = Sashite::Sin::Identifier.new(family, side)
 
-    raise "letter should be #{letter}" unless identifier.letter == letter
+    raise "family should be #{family}" unless identifier.family == family
     raise "side should be #{side}" unless identifier.side == side
     raise "SIN string should be #{expected_sin}" unless identifier.to_s == expected_sin
   end
@@ -127,18 +127,36 @@ end
 run_test("Identifier to_s returns correct SIN string") do
   test_cases = [
     [:C, :first, "C"],
-    [:c, :second, "c"],
+    [:C, :second, "c"],
     [:S, :first, "S"],
-    [:s, :second, "s"],
+    [:S, :second, "s"],
     [:X, :first, "X"],
-    [:x, :second, "x"]
+    [:X, :second, "x"]
   ]
 
-  test_cases.each do |letter, side, expected|
-    identifier = Sashite::Sin::Identifier.new(letter, side)
+  test_cases.each do |family, side, expected|
+    identifier = Sashite::Sin::Identifier.new(family, side)
     result = identifier.to_s
 
-    raise "#{letter}, #{side} should be #{expected}, got #{result}" unless result == expected
+    raise "#{family}, #{side} should be #{expected}, got #{result}" unless result == expected
+  end
+end
+
+run_test("Identifier letter method returns combined representation") do
+  test_cases = [
+    [:C, :first, "C"],
+    [:C, :second, "c"],
+    [:S, :first, "S"],
+    [:S, :second, "s"],
+    [:X, :first, "X"],
+    [:X, :second, "x"]
+  ]
+
+  test_cases.each do |family, side, expected_letter|
+    identifier = Sashite::Sin::Identifier.new(family, side)
+    result = identifier.letter
+
+    raise "#{family}, #{side} letter should be #{expected_letter}, got #{result}" unless result == expected_letter
   end
 end
 
@@ -149,24 +167,26 @@ run_test("Identifier side mutations return new instances") do
   flipped = identifier.flip
   raise "flip should return new instance" if flipped.equal?(identifier)
   raise "flipped identifier should have opposite side" unless flipped.side == :second
-  raise "flipped identifier should have lowercase letter" unless flipped.letter == :c
+  raise "flipped identifier should have same family" unless flipped.family == :C
+  raise "flipped identifier should have lowercase letter" unless flipped.letter == "c"
   raise "original identifier should be unchanged" unless identifier.side == :first
 end
 
 run_test("Identifier attribute transformations") do
   identifier = Sashite::Sin::Identifier.new(:C, :first)
 
-  # Test with_letter
-  s_identifier = identifier.with_letter(:S)
-  raise "with_letter should return new instance" if s_identifier.equal?(identifier)
-  raise "new identifier should have different letter" unless s_identifier.letter == :S
+  # Test with_family
+  s_identifier = identifier.with_family(:S)
+  raise "with_family should return new instance" if s_identifier.equal?(identifier)
+  raise "new identifier should have different family" unless s_identifier.family == :S
   raise "new identifier should have same side" unless s_identifier.side == identifier.side
 
   # Test with_side
   black_chess = identifier.with_side(:second)
   raise "with_side should return new instance" if black_chess.equal?(identifier)
   raise "new identifier should have different side" unless black_chess.side == :second
-  raise "new identifier should have lowercase letter" unless black_chess.letter == :c
+  raise "new identifier should have same family" unless black_chess.family == :C
+  raise "new identifier should have lowercase letter" unless black_chess.letter == "c"
 end
 
 run_test("Identifier immutability") do
@@ -186,13 +206,13 @@ end
 run_test("Identifier equality and hash") do
   identifier1 = Sashite::Sin::Identifier.new(:C, :first)
   identifier2 = Sashite::Sin::Identifier.new(:C, :first)
-  identifier3 = Sashite::Sin::Identifier.new(:c, :second)
+  identifier3 = Sashite::Sin::Identifier.new(:C, :second)
   identifier4 = Sashite::Sin::Identifier.new(:S, :first)
 
   # Test equality
   raise "identical identifiers should be equal" unless identifier1 == identifier2
   raise "different side should not be equal" if identifier1 == identifier3
-  raise "different letter should not be equal" if identifier1 == identifier4
+  raise "different family should not be equal" if identifier1 == identifier4
 
   # Test hash consistency
   raise "equal identifiers should have same hash" unless identifier1.hash == identifier2.hash
@@ -202,44 +222,57 @@ run_test("Identifier equality and hash") do
   raise "set should contain 3 unique identifiers" unless identifiers_set.size == 3
 end
 
-run_test("Identifier letter and side identification") do
+run_test("Identifier family and side identification") do
   test_cases = [
     ["C", :C, :first, true, false],
-    ["c", :c, :second, false, true],
+    ["c", :C, :second, false, true],
     ["S", :S, :first, true, false],
-    ["s", :s, :second, false, true]
+    ["s", :S, :second, false, true]
   ]
 
-  test_cases.each do |sin_string, expected_letter, expected_side, is_first, is_second|
+  test_cases.each do |sin_string, expected_family, expected_side, is_first, is_second|
     identifier = Sashite::Sin.parse(sin_string)
 
-    raise "#{sin_string}: wrong letter" unless identifier.letter == expected_letter
+    raise "#{sin_string}: wrong family" unless identifier.family == expected_family
     raise "#{sin_string}: wrong side" unless identifier.side == expected_side
     raise "#{sin_string}: wrong first_player?" unless identifier.first_player? == is_first
     raise "#{sin_string}: wrong second_player?" unless identifier.second_player? == is_second
   end
 end
 
-run_test("Identifier same_letter? and same_side? methods") do
+run_test("Identifier same_family? and same_side? methods") do
   c_first = Sashite::Sin::Identifier.new(:C, :first)
-  c_second = Sashite::Sin::Identifier.new(:c, :second)
+  c_second = Sashite::Sin::Identifier.new(:C, :second)
   s_first = Sashite::Sin::Identifier.new(:S, :first)
-  s_second = Sashite::Sin::Identifier.new(:s, :second)
+  s_second = Sashite::Sin::Identifier.new(:S, :second)
 
-  # same_letter? tests (case-insensitive)
-  raise "C and c should be same letter family" unless c_first.same_letter?(c_second)
-  raise "C and S should not be same letter family" if c_first.same_letter?(s_first)
+  # same_family? tests
+  raise "C first and C second should be same family" unless c_first.same_family?(c_second)
+  raise "C and S should not be same family" if c_first.same_family?(s_first)
 
   # same_side? tests
   raise "first player identifiers should be same side" unless c_first.same_side?(s_first)
   raise "different side identifiers should not be same side" if c_first.same_side?(c_second)
 end
 
+run_test("Identifier same_letter? alias for same_family?") do
+  c_first = Sashite::Sin::Identifier.new(:C, :first)
+  c_second = Sashite::Sin::Identifier.new(:C, :second)
+  s_first = Sashite::Sin::Identifier.new(:S, :first)
+
+  # same_letter? should work as alias for same_family?
+  raise "same_letter? should work like same_family?" unless c_first.same_letter?(c_second)
+  raise "same_letter? should work like same_family?" if c_first.same_letter?(s_first)
+
+  # Should be identical results
+  raise "same_letter? and same_family? should be identical" unless c_first.same_letter?(c_second) == c_first.same_family?(c_second)
+end
+
 run_test("Identifier transformation methods return self when appropriate") do
   identifier = Sashite::Sin::Identifier.new(:C, :first)
 
   # Test with_* methods that should return self
-  raise "with_letter with same letter should return self" unless identifier.with_letter(:C).equal?(identifier)
+  raise "with_family with same family should return self" unless identifier.with_family(:C).equal?(identifier)
   raise "with_side with same side should return self" unless identifier.with_side(:first).equal?(identifier)
 end
 
@@ -252,21 +285,21 @@ run_test("Identifier transformation chains") do
   raise "flip then flip should equal original" unless back_to_original == identifier
 
   # Test complex chain
-  transformed = identifier.flip.with_letter(:S).flip
+  transformed = identifier.flip.with_family(:S).flip
   raise "complex chain should work" unless transformed.to_s == "S"
   raise "original should be unchanged" unless identifier.to_s == "C"
 end
 
-run_test("Identifier error handling for invalid letters") do
-  # Invalid letters
-  invalid_letters = [nil, "", "C", "chess", "CHESS", 1, [], :AA, :Aa, :"", :"1", :"1A"]
+run_test("Identifier error handling for invalid families") do
+  # Invalid families
+  invalid_families = [nil, "", "C", "chess", "CHESS", 1, [], :AA, :Aa, :"", :"1", :"1A", :a, :c]
 
-  invalid_letters.each do |letter|
+  invalid_families.each do |family|
     begin
-      Sashite::Sin::Identifier.new(letter, :first)
-      raise "Should have raised error for invalid letter #{letter.inspect}"
+      Sashite::Sin::Identifier.new(family, :first)
+      raise "Should have raised error for invalid family #{family.inspect}"
     rescue ArgumentError => e
-      raise "Error message should mention invalid letter" unless e.message.include?("Letter must be")
+      raise "Error message should mention invalid family" unless e.message.include?("Family must be")
     end
   end
 
@@ -297,34 +330,34 @@ run_test("Identifier error handling for invalid SIN strings") do
   end
 end
 
-# Test letter family examples with new API
-run_test("Letter family identifiers with new API") do
+# Test family examples with new API
+run_test("Family identifiers with new API") do
   # Chess family (C)
   chess_first = Sashite::Sin.identifier(:C, :first)
   raise "Chess first should be first player" unless chess_first.first_player?
-  raise "Chess letter should be :C" unless chess_first.letter == :C
+  raise "Chess family should be :C" unless chess_first.family == :C
 
-  chess_second = Sashite::Sin.identifier(:c, :second)
+  chess_second = Sashite::Sin.identifier(:C, :second)
   raise "Chess second should be second player" unless chess_second.second_player?
-  raise "Chess letter should be :c" unless chess_second.letter == :c
+  raise "Chess family should be :C" unless chess_second.family == :C
 
   # Shogi family (S)
   shogi_first = Sashite::Sin.identifier(:S, :first)
-  raise "Shogi letter should be :S" unless shogi_first.letter == :S
+  raise "Shogi family should be :S" unless shogi_first.family == :S
   raise "Shogi SIN should be S" unless shogi_first.to_s == "S"
 
   # Xiangqi family (X)
   xiangqi_first = Sashite::Sin.identifier(:X, :first)
-  raise "Xiangqi letter should be :X" unless xiangqi_first.letter == :X
+  raise "Xiangqi family should be :X" unless xiangqi_first.family == :X
   raise "Xiangqi SIN should be X" unless xiangqi_first.to_s == "X"
 end
 
 run_test("Cross-style transformations with new API") do
-  # Test that identifiers can be transformed across different letter families
+  # Test that identifiers can be transformed across different families
   identifier = Sashite::Sin.identifier(:C, :first)
 
   # Chain transformations
-  transformed = identifier.flip.with_letter(:S).flip.with_letter(:X)
+  transformed = identifier.flip.with_family(:S).flip.with_family(:X)
   expected_final = "X"  # Should end up as first player X
 
   raise "Chained transformation should work" unless transformed.to_s == expected_final
@@ -337,35 +370,35 @@ run_test("Practical usage - identifier collections with new API") do
     Sashite::Sin.identifier(:C, :first),
     Sashite::Sin.identifier(:S, :first),
     Sashite::Sin.identifier(:X, :first),
-    Sashite::Sin.identifier(:c, :second)
+    Sashite::Sin.identifier(:C, :second)
   ]
 
   # Filter by side
   first_player_identifiers = identifiers.select(&:first_player?)
   raise "Should have 3 first player identifiers" unless first_player_identifiers.size == 3
 
-  # Group by letter family
-  by_letter_family = identifiers.group_by { |i| i.letter.to_s.upcase }
-  raise "Should have C letter family grouped" unless by_letter_family["C"].size == 2
+  # Group by family
+  by_family = identifiers.group_by(&:family)
+  raise "Should have C family grouped" unless by_family[:C].size == 2
 
-  # Find specific letter families
-  c_identifiers = identifiers.select { |i| i.same_letter?(identifiers.first) }
+  # Find specific families
+  c_identifiers = identifiers.select { |i| i.same_family?(identifiers.first) }
   raise "Should have 2 C family identifiers" unless c_identifiers.size == 2
 end
 
 run_test("Practical usage - game configuration with new API") do
   # Simulate multi-style match setup
   white_identifier = Sashite::Sin.identifier(:C, :first)
-  black_identifier = Sashite::Sin.identifier(:s, :second)
+  black_identifier = Sashite::Sin.identifier(:S, :second)
 
   raise "White should be first player" unless white_identifier.first_player?
   raise "Black should be second player" unless black_identifier.second_player?
-  raise "Identifiers should have different letter families" unless !white_identifier.same_letter?(black_identifier)
+  raise "Identifiers should have different families" unless !white_identifier.same_family?(black_identifier)
   raise "Identifiers should have different sides" unless !white_identifier.same_side?(black_identifier)
 
   # Test identifier switching
-  switched = white_identifier.with_letter(:S)
-  raise "Switched identifier should have S letter" unless switched.letter == :S
+  switched = white_identifier.with_family(:S)
+  raise "Switched identifier should have S family" unless switched.family == :S
   raise "Switched identifier should keep white's side" unless switched.side == white_identifier.side
 end
 
@@ -376,7 +409,8 @@ run_test("All 26 ASCII letters work correctly") do
   letters.each do |letter|
     # Test parsing
     identifier = Sashite::Sin.parse(letter)
-    raise "#{letter} should parse correctly" unless identifier.letter.to_s == letter
+    expected_family = letter.upcase.to_sym
+    raise "#{letter} should have correct family" unless identifier.family == expected_family
 
     # Test side inference
     expected_side = letter == letter.upcase ? :first : :second
@@ -384,10 +418,11 @@ run_test("All 26 ASCII letters work correctly") do
 
     # Test roundtrip
     raise "#{letter} should roundtrip correctly" unless identifier.to_s == letter
+    raise "#{letter} should have correct letter representation" unless identifier.letter == letter
   end
 end
 
-run_test("Letter case transformations work correctly") do
+run_test("Family case transformations work correctly") do
   # Test all uppercase letters can flip to lowercase
   ("A".."Z").each do |upper|
     identifier = Sashite::Sin.parse(upper)
@@ -396,6 +431,7 @@ run_test("Letter case transformations work correctly") do
 
     raise "#{upper} should flip to #{expected_lower}" unless flipped.to_s == expected_lower
     raise "#{upper} flipped should be second player" unless flipped.second_player?
+    raise "#{upper} flipped should have same family" unless flipped.family == identifier.family
   end
 
   # Test all lowercase letters can flip to uppercase
@@ -406,10 +442,11 @@ run_test("Letter case transformations work correctly") do
 
     raise "#{lower} should flip to #{expected_upper}" unless flipped.to_s == expected_upper
     raise "#{lower} flipped should be first player" unless flipped.first_player?
+    raise "#{lower} flipped should have same family" unless flipped.family == identifier.family
   end
 end
 
-run_test("Same letter family detection works correctly") do
+run_test("Same family detection works correctly") do
   test_pairs = [
     ["A", "a"], ["B", "b"], ["C", "c"], ["X", "x"], ["Y", "y"], ["Z", "z"]
   ]
@@ -418,7 +455,7 @@ run_test("Same letter family detection works correctly") do
     identifier1 = Sashite::Sin.parse(upper)
     identifier2 = Sashite::Sin.parse(lower)
 
-    raise "#{upper} and #{lower} should be same letter family" unless identifier1.same_letter?(identifier2)
+    raise "#{upper} and #{lower} should be same family" unless identifier1.same_family?(identifier2)
     raise "#{upper} and #{lower} should not be same side" if identifier1.same_side?(identifier2)
   end
 end
@@ -457,11 +494,11 @@ run_test("Performance - repeated operations with new API") do
   1000.times do
     identifier = Sashite::Sin.identifier(:C, :first)
     flipped = identifier.flip
-    renamed = identifier.with_letter(:S)
+    renamed = identifier.with_family(:S)
 
     raise "Performance test failed" unless Sashite::Sin.valid?("C")
     raise "Performance test failed" unless flipped.second_player?
-    raise "Performance test failed" unless renamed.letter == :S
+    raise "Performance test failed" unless renamed.family == :S
   end
 end
 
@@ -475,25 +512,28 @@ run_test("Identifier class constants are properly defined") do
 
   # Test valid sides
   raise "VALID_SIDES should contain correct values" unless identifier_class::VALID_SIDES == [:first, :second]
+
+  # Test valid families
+  raise "VALID_FAMILIES should contain :A to :Z" unless identifier_class::VALID_FAMILIES == (:A..:Z).to_a
 end
 
 # Test roundtrip parsing
 run_test("Roundtrip parsing consistency") do
   test_cases = [
     [:C, :first],
-    [:s, :second],
+    [:S, :second],
     [:X, :first],
-    [:m, :second]
+    [:M, :second]
   ]
 
-  test_cases.each do |letter, side|
+  test_cases.each do |family, side|
     # Create identifier -> to_s -> parse -> compare
-    original = Sashite::Sin::Identifier.new(letter, side)
+    original = Sashite::Sin::Identifier.new(family, side)
     sin_string = original.to_s
     parsed = Sashite::Sin.parse(sin_string)
 
     raise "Roundtrip failed: original != parsed" unless original == parsed
-    raise "Roundtrip failed: different letter" unless original.letter == parsed.letter
+    raise "Roundtrip failed: different family" unless original.family == parsed.family
     raise "Roundtrip failed: different side" unless original.side == parsed.side
   end
 end
@@ -510,6 +550,50 @@ run_test("Case sensitivity maintained correctly") do
 
   invalid_cases.each do |sin|
     raise "#{sin} should be invalid" if Sashite::Sin.valid?(sin)
+  end
+end
+
+# Test family validation
+run_test("Family validation works correctly") do
+  # Valid families should be :A to :Z only
+  valid_families = (:"A"..:"Z").to_a
+  invalid_families = [:a, :c, :z, :AA, :Chess, :"", :"1", nil]
+
+  valid_families.each do |family|
+    # Should not raise error
+    identifier = Sashite::Sin::Identifier.new(family, :first)
+    raise "Valid family #{family} should work" unless identifier.family == family
+  end
+
+  invalid_families.each do |family|
+    begin
+      Sashite::Sin::Identifier.new(family, :first)
+      raise "Should have raised error for invalid family #{family.inspect}"
+    rescue ArgumentError
+      # Expected
+    end
+  end
+end
+
+# Test that letter representation is always consistent with family and side
+run_test("Letter representation consistency") do
+  test_cases = [
+    [:A, :first, "A"],
+    [:A, :second, "a"],
+    [:C, :first, "C"],
+    [:C, :second, "c"],
+    [:S, :first, "S"],
+    [:S, :second, "s"],
+    [:Z, :first, "Z"],
+    [:Z, :second, "z"]
+  ]
+
+  test_cases.each do |family, side, expected_letter|
+    identifier = Sashite::Sin::Identifier.new(family, side)
+
+    raise "Letter should match expected" unless identifier.letter == expected_letter
+    raise "to_s should match letter" unless identifier.to_s == identifier.letter
+    raise "Letter case should match side" unless (identifier.letter == identifier.letter.upcase) == identifier.first_player?
   end
 end
 

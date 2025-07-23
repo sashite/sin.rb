@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sashite-sin (2.0.1)
+    sashite-sin (2.1.0)
 
 GEM
   remote: https://rubygems.org/
