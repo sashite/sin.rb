@@ -20,7 +20,7 @@ module Sashite
   #   "S"  - First player, S style family
   #   "s"  - Second player, S style family
   #
-  # See: https://sashite.dev/specs/sin/1.0.0/
+  # @see https://sashite.dev/specs/sin/1.0.0/
   module Sin
     # Check if a string is a valid SIN notation
     #
