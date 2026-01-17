@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/github/v/tag/sashite/sin.rb?label=Version&logo=github)](https://github.com/sashite/sin.rb/tags)
 [![Yard documentation](https://img.shields.io/badge/Yard-documentation-blue.svg?logo=github)](https://rubydoc.info/github/sashite/sin.rb/main)
-[![CI](https://github.com/sashite/sin.rb/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/sashite/sin.rb/actions)
+[![CI](https://github.com/sashite/sin.rb/actions/workflows/ruby.yml/badge.svg?branch=main)](https://github.com/sashite/sin.rb/actions)
 [![License](https://img.shields.io/github/license/sashite/sin.rb?label=License&logo=github)](https://github.com/sashite/sin.rb/raw/main/LICENSE)
 
 > **SIN** (Style Identifier Notation) implementation for Ruby.
