@@ -1,22 +1,12 @@
 # frozen_string_literal: true
 
 Gem::Specification.new do |spec|
-  spec.name    = "sashite-sin"
-  spec.version = ::File.read("VERSION.semver").chomp
-  spec.author  = "Cyril Kato"
-  spec.email   = "contact@cyril.email"
-  spec.summary = "SIN (Style Identifier Notation) implementation for Ruby with immutable identifier objects"
-
-  spec.description = <<~DESC
-    SIN (Style Identifier Notation) provides a rule-agnostic format for identifying styles
-    in abstract strategy board games. This gem implements the SIN Specification v1.0.0 with
-    a modern Ruby interface featuring immutable identifier objects and functional programming
-    principles. SIN uses single ASCII letters with case-based side encoding (A-Z for first player,
-    a-z for second player), enabling clear distinction between different style families in
-    multi-style gaming environments. Perfect for cross-style matches, game engines, and hybrid
-    gaming systems requiring compact style identification with enhanced collision resolution.
-  DESC
-
+  spec.name                   = "sashite-sin"
+  spec.version                = ::File.read("VERSION.semver").chomp
+  spec.author                 = "Cyril Kato"
+  spec.email                  = "contact@cyril.email"
+  spec.summary                = "SIN (Style Identifier Notation) implementation for Ruby with immutable identifier objects"
+  spec.description            = "SIN (Style Identifier Notation) implementation for Ruby. Provides a rule-agnostic format for identifying player styles in abstract strategy board games with immutable identifier objects and functional programming principles."
   spec.homepage               = "https://github.com/sashite/sin.rb"
   spec.license                = "Apache-2.0"
   spec.files                  = ::Dir["LICENSE", "README.md", "lib/**/*"]
@@ -28,6 +18,8 @@ Gem::Specification.new do |spec|
     "homepage_uri"          => "https://github.com/sashite/sin.rb",
     "source_code_uri"       => "https://github.com/sashite/sin.rb",
     "specification_uri"     => "https://sashite.dev/specs/sin/1.0.0/",
+    "wiki_uri"              => "https://sashite.dev/specs/sin/1.0.0/examples/",
+    "funding_uri"           => "https://github.com/sponsors/sashite",
     "rubygems_mfa_required" => "true"
   }
 end
