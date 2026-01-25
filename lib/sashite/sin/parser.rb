@@ -11,8 +11,8 @@ module Sashite
     # malformed input, Unicode lookalikes, and injection attacks.
     #
     # @example Parsing a valid SIN string
-    #   Parser.parse("C")  # => { style: :C, side: :first }
-    #   Parser.parse("c")  # => { style: :C, side: :second }
+    #   Parser.parse("C")  # => { abbr: :C, side: :first }
+    #   Parser.parse("c")  # => { abbr: :C, side: :second }
     #
     # @example Validation
     #   Parser.valid?("C")   # => true
@@ -23,12 +23,12 @@ module Sashite
       # Parses a SIN string into its components.
       #
       # @param input [String] The SIN string to parse
-      # @return [Hash] Hash with :style and :side keys
+      # @return [Hash] Hash with :abbr and :side keys
       # @raise [Errors::Argument] If the input is invalid
       #
       # @example
-      #   Parser.parse("C")  # => { style: :C, side: :first }
-      #   Parser.parse("s")  # => { style: :S, side: :second }
+      #   Parser.parse("C")  # => { abbr: :C, side: :first }
+      #   Parser.parse("s")  # => { abbr: :S, side: :second }
       def self.parse(input)
         validate_input_type!(input)
         validate_not_empty!(input)
@@ -103,15 +103,15 @@ module Sashite
         raise Errors::Argument, Errors::Argument::Messages::MUST_BE_LETTER
       end
 
-      # Extracts style and side from a validated byte.
+      # Extracts abbr and side from a validated byte.
       #
       # @param byte [Integer] A validated ASCII letter byte
-      # @return [Hash] Hash with :style and :side keys
+      # @return [Hash] Hash with :abbr and :side keys
       private_class_method def self.extract_components(byte)
         if uppercase_letter?(byte)
-          { style: byte.chr.to_sym, side: :first }
+          { abbr: byte.chr.to_sym, side: :first }
         else
-          { style: byte.chr.upcase.to_sym, side: :second }
+          { abbr: byte.chr.upcase.to_sym, side: :second }
         end
       end
 

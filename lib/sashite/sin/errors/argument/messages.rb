@@ -29,10 +29,10 @@ module Sashite
           # @return [String] Error message
           MUST_BE_LETTER = "must be a letter"
 
-          # Error message for invalid style value.
+          # Error message for invalid abbreviation value.
           #
           # @return [String] Error message
-          INVALID_STYLE = "invalid style"
+          INVALID_ABBR = "invalid abbr"
 
           # Error message for invalid side value.
           #

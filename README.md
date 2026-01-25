@@ -35,13 +35,13 @@ require "sashite/sin"
 
 # Standard parsing (raises on error)
 sin = Sashite::Sin.parse("C")
-sin.style  # => :C
-sin.side   # => :first
+sin.abbr  # => :C
+sin.side  # => :first
 
 # Lowercase indicates second player
 sin = Sashite::Sin.parse("c")
-sin.style  # => :C
-sin.side   # => :second
+sin.abbr  # => :C
+sin.side  # => :second
 
 # Invalid input raises ArgumentError
 Sashite::Sin.parse("")    # => raises ArgumentError
@@ -72,34 +72,6 @@ Sashite::Sin.valid?("CC")  # => false
 Sashite::Sin.valid?("1")   # => false
 ```
 
-### Accessing Identifier Data
-
-```ruby
-sin = Sashite::Sin.parse("C")
-
-# Get attributes
-sin.style  # => :C
-sin.side   # => :first
-
-# Get string component
-sin.letter  # => "C"
-```
-
-### Transformations
-
-All transformations return new immutable `Identifier` objects.
-
-```ruby
-sin = Sashite::Sin.parse("C")
-
-# Side transformation
-sin.flip.to_s  # => "c"
-
-# Attribute changes
-sin.with_style(:S).to_s  # => "S"
-sin.with_side(:second).to_s  # => "c"
-```
-
 ### Queries
 
 ```ruby
@@ -111,8 +83,8 @@ sin.second_player?  # => false
 
 # Comparison queries
 other = Sashite::Sin.parse("c")
-sin.same_style?(other)  # => true
-sin.same_side?(other)   # => false
+sin.same_abbr?(other)  # => true
+sin.same_side?(other)  # => false
 ```
 
 ## API Reference
@@ -120,20 +92,20 @@ sin.same_side?(other)   # => false
 ### Types
 
 ```ruby
-# Identifier represents a parsed SIN identifier with style and side.
+# Identifier represents a parsed SIN identifier with abbreviation and side.
 class Sashite::Sin::Identifier
-  # Creates an Identifier from style and side.
+  # Creates an Identifier from abbreviation and side.
   # Raises ArgumentError if attributes are invalid.
   #
-  # @param style [Symbol] Style abbreviation (:A through :Z)
+  # @param abbr [Symbol] Style abbreviation (:A through :Z)
   # @param side [Symbol] Player side (:first or :second)
   # @return [Identifier]
-  def initialize(style, side)
+  def initialize(abbr, side)
 
-  # Returns the style as an uppercase symbol.
+  # Returns the style abbreviation as an uppercase symbol.
   #
   # @return [Symbol]
-  def style
+  def abbr
 
   # Returns the player side.
   #
@@ -150,8 +122,8 @@ end
 ### Constants
 
 ```ruby
-Sashite::Sin::Identifier::VALID_STYLES  # => [:A, :B, ..., :Z]
-Sashite::Sin::Identifier::VALID_SIDES   # => [:first, :second]
+Sashite::Sin::Identifier::VALID_ABBRS  # => [:A, :B, ..., :Z]
+Sashite::Sin::Identifier::VALID_SIDES  # => [:first, :second]
 ```
 
 ### Parsing
@@ -176,19 +148,6 @@ def Sashite::Sin.parse(string)
 def Sashite::Sin.valid?(string)
 ```
 
-### Transformations
-
-All transformations return new `Sashite::Sin::Identifier` objects:
-
-```ruby
-# Side transformation
-def flip  # => Identifier
-
-# Attribute changes
-def with_style(style)  # => Identifier
-def with_side(side)    # => Identifier
-```
-
 ### Queries
 
 ```ruby
@@ -197,8 +156,8 @@ def first_player?   # => Boolean
 def second_player?  # => Boolean
 
 # Comparison queries
-def same_style?(other)  # => Boolean
-def same_side?(other)   # => Boolean
+def same_abbr?(other)  # => Boolean
+def same_side?(other)  # => Boolean
 ```
 
 ### Errors
@@ -213,10 +172,10 @@ All parsing and validation errors raise `ArgumentError` with descriptive message
 
 ## Design Principles
 
-- **Bounded values**: Explicit validation of styles and sides
+- **Bounded values**: Explicit validation of abbreviations and sides
 - **Object-oriented**: `Identifier` class enables methods and encapsulation
 - **Ruby idioms**: `valid?` predicate, `to_s` conversion, `ArgumentError` for invalid input
-- **Immutable identifiers**: All transformations return new objects
+- **Immutable identifiers**: Instances are frozen after creation
 - **No dependencies**: Pure Ruby standard library only
 
 ## Related Specifications

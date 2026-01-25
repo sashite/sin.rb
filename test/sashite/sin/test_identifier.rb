@@ -7,7 +7,7 @@ require_relative "../../../lib/sashite/sin/identifier"
 def run_test(name)
   print "  #{name}... "
   yield
-  puts "✔"
+  puts "✓"
 rescue StandardError => e
   warn "✗ Failure: #{e.message}"
   warn "    #{e.backtrace.first}"
@@ -24,44 +24,44 @@ puts
 
 puts "Constructor:"
 
-run_test("creates identifier with style and side") do
+run_test("creates identifier with abbr and side") do
   id = Sashite::Sin::Identifier.new(:C, :first)
-  raise "wrong style" unless id.style == :C
+  raise "wrong abbr" unless id.abbr == :C
   raise "wrong side" unless id.side == :first
 end
 
 run_test("creates identifier for second player") do
   id = Sashite::Sin::Identifier.new(:S, :second)
-  raise "wrong style" unless id.style == :S
+  raise "wrong abbr" unless id.abbr == :S
   raise "wrong side" unless id.side == :second
 end
 
-run_test("creates identifier for all styles A-Z") do
-  (:A..:Z).each do |style|
-    id = Sashite::Sin::Identifier.new(style, :first)
-    raise "wrong style for #{style}" unless id.style == style
+run_test("creates identifier for all abbrs A-Z") do
+  (:A..:Z).each do |abbr|
+    id = Sashite::Sin::Identifier.new(abbr, :first)
+    raise "wrong abbr for #{abbr}" unless id.abbr == abbr
   end
 end
 
-run_test("raises on invalid style") do
+run_test("raises on invalid abbr") do
   Sashite::Sin::Identifier.new(:invalid, :first)
   raise "should have raised"
 rescue Sashite::Sin::Errors::Argument => e
-  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE
+  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_ABBR
 end
 
-run_test("raises on lowercase style symbol") do
+run_test("raises on lowercase abbr symbol") do
   Sashite::Sin::Identifier.new(:c, :first)
   raise "should have raised"
 rescue Sashite::Sin::Errors::Argument => e
-  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE
+  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_ABBR
 end
 
-run_test("raises on non-symbol style") do
+run_test("raises on non-symbol abbr") do
   Sashite::Sin::Identifier.new("C", :first)
   raise "should have raised"
 rescue Sashite::Sin::Errors::Argument => e
-  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE
+  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_ABBR
 end
 
 run_test("raises on invalid side") do
@@ -107,121 +107,18 @@ run_test("to_s returns lowercase for second player") do
   raise "wrong string" unless id.to_s == "c"
 end
 
-run_test("letter returns uppercase for first player") do
-  id = Sashite::Sin::Identifier.new(:S, :first)
-  raise "wrong letter" unless id.letter == "S"
-end
-
-run_test("letter returns lowercase for second player") do
-  id = Sashite::Sin::Identifier.new(:S, :second)
-  raise "wrong letter" unless id.letter == "s"
-end
-
-run_test("to_s for all styles first player") do
-  (:A..:Z).each do |style|
-    id = Sashite::Sin::Identifier.new(style, :first)
-    raise "wrong string for #{style}" unless id.to_s == style.to_s
+run_test("to_s for all abbrs first player") do
+  (:A..:Z).each do |abbr|
+    id = Sashite::Sin::Identifier.new(abbr, :first)
+    raise "wrong string for #{abbr}" unless id.to_s == abbr.to_s
   end
 end
 
-run_test("to_s for all styles second player") do
-  (:A..:Z).each do |style|
-    id = Sashite::Sin::Identifier.new(style, :second)
-    raise "wrong string for #{style}" unless id.to_s == style.to_s.downcase
+run_test("to_s for all abbrs second player") do
+  (:A..:Z).each do |abbr|
+    id = Sashite::Sin::Identifier.new(abbr, :second)
+    raise "wrong string for #{abbr}" unless id.to_s == abbr.to_s.downcase
   end
-end
-
-# ============================================================================
-# SIDE TRANSFORMATION TESTS
-# ============================================================================
-
-puts
-puts "Side transformations:"
-
-run_test("flip changes first to second") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  flipped = id.flip
-  raise "wrong side" unless flipped.side == :second
-  raise "style should be unchanged" unless flipped.style == :C
-end
-
-run_test("flip changes second to first") do
-  id = Sashite::Sin::Identifier.new(:C, :second)
-  flipped = id.flip
-  raise "wrong side" unless flipped.side == :first
-end
-
-run_test("flip does not modify original") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  id.flip
-  raise "original should be unchanged" unless id.side == :first
-end
-
-run_test("flip returns new object") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  flipped = id.flip
-  raise "should be different object" if id.equal?(flipped)
-end
-
-# ============================================================================
-# ATTRIBUTE TRANSFORMATION TESTS
-# ============================================================================
-
-puts
-puts "Attribute transformations:"
-
-run_test("with_style changes style") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  changed = id.with_style(:S)
-  raise "wrong style" unless changed.style == :S
-  raise "side should be unchanged" unless changed.side == :first
-end
-
-run_test("with_style returns self if same style") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  changed = id.with_style(:C)
-  raise "should return same object" unless id.equal?(changed)
-end
-
-run_test("with_style does not modify original") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  id.with_style(:S)
-  raise "original should be unchanged" unless id.style == :C
-end
-
-run_test("with_style raises on invalid style") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  id.with_style(:invalid)
-  raise "should have raised"
-rescue Sashite::Sin::Errors::Argument => e
-  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE
-end
-
-run_test("with_side changes side") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  changed = id.with_side(:second)
-  raise "wrong side" unless changed.side == :second
-  raise "style should be unchanged" unless changed.style == :C
-end
-
-run_test("with_side returns self if same side") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  changed = id.with_side(:first)
-  raise "should return same object" unless id.equal?(changed)
-end
-
-run_test("with_side does not modify original") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  id.with_side(:second)
-  raise "original should be unchanged" unless id.side == :first
-end
-
-run_test("with_side raises on invalid side") do
-  id = Sashite::Sin::Identifier.new(:C, :first)
-  id.with_side(:invalid)
-  raise "should have raised"
-rescue Sashite::Sin::Errors::Argument => e
-  raise "wrong message" unless e.message == Sashite::Sin::Errors::Argument::Messages::INVALID_SIDE
 end
 
 # ============================================================================
@@ -258,16 +155,16 @@ end
 puts
 puts "Comparison queries:"
 
-run_test("same_style? returns true for same style") do
+run_test("same_abbr? returns true for same abbr") do
   id1 = Sashite::Sin::Identifier.new(:C, :first)
   id2 = Sashite::Sin::Identifier.new(:C, :second)
-  raise "should be true" unless id1.same_style?(id2)
+  raise "should be true" unless id1.same_abbr?(id2)
 end
 
-run_test("same_style? returns false for different style") do
+run_test("same_abbr? returns false for different abbr") do
   id1 = Sashite::Sin::Identifier.new(:C, :first)
   id2 = Sashite::Sin::Identifier.new(:S, :first)
-  raise "should be false" if id1.same_style?(id2)
+  raise "should be false" if id1.same_abbr?(id2)
 end
 
 run_test("same_side? returns true for same side") do
@@ -289,13 +186,13 @@ end
 puts
 puts "Constants:"
 
-run_test("VALID_STYLES contains 26 symbols") do
-  raise "wrong count" unless Sashite::Sin::Identifier::VALID_STYLES.size == 26
+run_test("VALID_ABBRS contains 26 symbols") do
+  raise "wrong count" unless Sashite::Sin::Identifier::VALID_ABBRS.size == 26
 end
 
-run_test("VALID_STYLES contains :A through :Z") do
-  (:A..:Z).each do |style|
-    raise "missing #{style}" unless Sashite::Sin::Identifier::VALID_STYLES.include?(style)
+run_test("VALID_ABBRS contains :A through :Z") do
+  (:A..:Z).each do |abbr|
+    raise "missing #{abbr}" unless Sashite::Sin::Identifier::VALID_ABBRS.include?(abbr)
   end
 end
 
@@ -318,7 +215,7 @@ run_test("identifiers with same attributes are equal") do
   raise "should be equal" unless id1 == id2
 end
 
-run_test("identifiers with different style are not equal") do
+run_test("identifiers with different abbr are not equal") do
   id1 = Sashite::Sin::Identifier.new(:C, :first)
   id2 = Sashite::Sin::Identifier.new(:S, :first)
   raise "should not be equal" if id1 == id2
@@ -328,6 +225,41 @@ run_test("identifiers with different side are not equal") do
   id1 = Sashite::Sin::Identifier.new(:C, :first)
   id2 = Sashite::Sin::Identifier.new(:C, :second)
   raise "should not be equal" if id1 == id2
+end
+
+run_test("eql? behaves like ==") do
+  id1 = Sashite::Sin::Identifier.new(:C, :first)
+  id2 = Sashite::Sin::Identifier.new(:C, :first)
+  raise "should be eql" unless id1.eql?(id2)
+end
+
+run_test("hash is equal for equal identifiers") do
+  id1 = Sashite::Sin::Identifier.new(:C, :first)
+  id2 = Sashite::Sin::Identifier.new(:C, :first)
+  raise "hash should be equal" unless id1.hash == id2.hash
+end
+
+run_test("hash is different for different identifiers") do
+  id1 = Sashite::Sin::Identifier.new(:C, :first)
+  id2 = Sashite::Sin::Identifier.new(:C, :second)
+  raise "hash should be different" if id1.hash == id2.hash
+end
+
+# ============================================================================
+# INSPECT TESTS
+# ============================================================================
+
+puts
+puts "Inspect:"
+
+run_test("inspect returns readable representation") do
+  id = Sashite::Sin::Identifier.new(:C, :first)
+  raise "wrong inspect" unless id.inspect == "#<Sashite::Sin::Identifier C>"
+end
+
+run_test("inspect for second player") do
+  id = Sashite::Sin::Identifier.new(:C, :second)
+  raise "wrong inspect" unless id.inspect == "#<Sashite::Sin::Identifier c>"
 end
 
 puts

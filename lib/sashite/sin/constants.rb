@@ -4,20 +4,20 @@ module Sashite
   module Sin
     # Constants for the SIN (Style Identifier Notation) specification.
     #
-    # Defines valid values for styles and sides, as well as formatting constants.
+    # Defines valid values for abbreviations and sides, as well as formatting constants.
     #
-    # @example Accessing valid styles
-    #   Constants::VALID_STYLES  # => [:A, :B, ..., :Z]
+    # @example Accessing valid abbreviations
+    #   Constants::VALID_ABBRS  # => [:A, :B, ..., :Z]
     #
     # @example Accessing valid sides
     #   Constants::VALID_SIDES  # => [:first, :second]
     #
     # @see https://sashite.dev/specs/sin/1.0.0/
     module Constants
-      # Valid style symbols (A-Z as uppercase symbols).
+      # Valid abbreviation symbols (A-Z as uppercase symbols).
       #
-      # @return [Array<Symbol>] Array of 26 valid style symbols
-      VALID_STYLES = %i[A B C D E F G H I J K L M N O P Q R S T U V W X Y Z].freeze
+      # @return [Array<Symbol>] Array of 26 valid abbreviation symbols
+      VALID_ABBRS = %i[A B C D E F G H I J K L M N O P Q R S T U V W X Y Z].freeze
 
       # Valid side symbols.
       #

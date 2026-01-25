@@ -8,7 +8,7 @@ module Sashite
     # Represents a parsed SIN (Style Identifier Notation) identifier.
     #
     # An Identifier encodes two attributes:
-    # - Style: the piece style (A-Z as uppercase symbol)
+    # - Abbr: the style abbreviation (A-Z as uppercase symbol)
     # - Side: the player side (:first or :second)
     #
     # Instances are immutable (frozen after creation).
@@ -23,21 +23,21 @@ module Sashite
     #
     # @see https://sashite.dev/specs/sin/1.0.0/
     class Identifier
-      # Valid style symbols (A-Z).
-      VALID_STYLES = Constants::VALID_STYLES
+      # Valid abbreviation symbols (A-Z).
+      VALID_ABBRS = Constants::VALID_ABBRS
 
       # Valid side symbols.
       VALID_SIDES = Constants::VALID_SIDES
 
-      # @return [Symbol] Piece style (:A to :Z, always uppercase)
-      attr_reader :style
+      # @return [Symbol] Style abbreviation (:A to :Z, always uppercase)
+      attr_reader :abbr
 
       # @return [Symbol] Player side (:first or :second)
       attr_reader :side
 
       # Creates a new Identifier instance.
       #
-      # @param style [Symbol] Piece style (:A to :Z)
+      # @param abbr [Symbol] Style abbreviation (:A to :Z)
       # @param side [Symbol] Player side (:first or :second)
       # @return [Identifier] A new frozen Identifier instance
       # @raise [Errors::Argument] If any attribute is invalid
@@ -45,11 +45,11 @@ module Sashite
       # @example
       #   Identifier.new(:C, :first)
       #   Identifier.new(:S, :second)
-      def initialize(style, side)
-        validate_style!(style)
+      def initialize(abbr, side)
+        validate_abbr!(abbr)
         validate_side!(side)
 
-        @style = style
+        @abbr = abbr
         @side = side
 
         freeze
@@ -67,73 +67,12 @@ module Sashite
       #   Identifier.new(:C, :first).to_s   # => "C"
       #   Identifier.new(:C, :second).to_s  # => "c"
       def to_s
-        letter
-      end
-
-      # Returns the letter component of the SIN.
-      #
-      # @return [String] Uppercase for first player, lowercase for second
-      #
-      # @example
-      #   Identifier.new(:C, :first).letter   # => "C"
-      #   Identifier.new(:C, :second).letter  # => "c"
-      def letter
-        base = String(style)
+        base = String(abbr)
 
         case side
         when :first  then base.upcase
         when :second then base.downcase
         end
-      end
-
-      # ========================================================================
-      # Side Transformations
-      # ========================================================================
-
-      # Returns a new Identifier with the opposite side.
-      #
-      # @return [Identifier] A new Identifier with flipped side
-      #
-      # @example
-      #   sin = Identifier.new(:C, :first)
-      #   sin.flip.to_s  # => "c"
-      def flip
-        new_side = first_player? ? :second : :first
-        self.class.new(style, new_side)
-      end
-
-      # ========================================================================
-      # Attribute Transformations
-      # ========================================================================
-
-      # Returns a new Identifier with a different style.
-      #
-      # @param new_style [Symbol] The new piece style (:A to :Z)
-      # @return [Identifier] A new Identifier with the specified style
-      # @raise [Errors::Argument] If the style is invalid
-      #
-      # @example
-      #   sin = Identifier.new(:C, :first)
-      #   sin.with_style(:S).to_s  # => "S"
-      def with_style(new_style)
-        return self if style.equal?(new_style)
-
-        self.class.new(new_style, side)
-      end
-
-      # Returns a new Identifier with a different side.
-      #
-      # @param new_side [Symbol] The new side (:first or :second)
-      # @return [Identifier] A new Identifier with the specified side
-      # @raise [Errors::Argument] If the side is invalid
-      #
-      # @example
-      #   sin = Identifier.new(:C, :first)
-      #   sin.with_side(:second).to_s  # => "c"
-      def with_side(new_side)
-        return self if side.equal?(new_side)
-
-        self.class.new(style, new_side)
       end
 
       # ========================================================================
@@ -164,17 +103,17 @@ module Sashite
       # Comparison Queries
       # ========================================================================
 
-      # Checks if two Identifiers have the same style.
+      # Checks if two Identifiers have the same abbreviation.
       #
       # @param other [Identifier] The other Identifier to compare
-      # @return [Boolean] true if same style
+      # @return [Boolean] true if same abbreviation
       #
       # @example
       #   sin1 = Identifier.new(:C, :first)
       #   sin2 = Identifier.new(:C, :second)
-      #   sin1.same_style?(sin2)  # => true
-      def same_style?(other)
-        style.equal?(other.style)
+      #   sin1.same_abbr?(sin2)  # => true
+      def same_abbr?(other)
+        abbr.equal?(other.abbr)
       end
 
       # Checks if two Identifiers have the same side.
@@ -206,7 +145,7 @@ module Sashite
       def ==(other)
         return false unless self.class === other
 
-        style.equal?(other.style) && side.equal?(other.side)
+        abbr.equal?(other.abbr) && side.equal?(other.side)
       end
 
       alias eql? ==
@@ -215,7 +154,7 @@ module Sashite
       #
       # @return [Integer] Hash code
       def hash
-        [style, side].hash
+        [abbr, side].hash
       end
 
       # Returns an inspect string for the Identifier.
@@ -234,10 +173,10 @@ module Sashite
       # Private Validation
       # ========================================================================
 
-      def validate_style!(style)
-        return if ::Symbol === style && Constants::VALID_STYLES.include?(style)
+      def validate_abbr!(abbr)
+        return if ::Symbol === abbr && Constants::VALID_ABBRS.include?(abbr)
 
-        raise Errors::Argument, Errors::Argument::Messages::INVALID_STYLE
+        raise Errors::Argument, Errors::Argument::Messages::INVALID_ABBR
       end
 
       def validate_side!(side)

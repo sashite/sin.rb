@@ -8,7 +8,7 @@ require_relative "../../../lib/sashite/sin/identifier"
 def run_test(name)
   print "  #{name}... "
   yield
-  puts "✔"
+  puts "✓"
 rescue StandardError => e
   warn "✗ Failure: #{e.message}"
   warn "    #{e.backtrace.first}"
@@ -27,20 +27,20 @@ puts "Valid inputs - uppercase letters:"
 
 run_test("parses uppercase letter 'C'") do
   result = Sashite::Sin::Parser.parse("C")
-  raise "wrong style" unless result[:style] == :C
+  raise "wrong abbr" unless result[:abbr] == :C
   raise "wrong side" unless result[:side] == :first
 end
 
 run_test("parses uppercase letter 'S'") do
   result = Sashite::Sin::Parser.parse("S")
-  raise "wrong style" unless result[:style] == :S
+  raise "wrong abbr" unless result[:abbr] == :S
   raise "wrong side" unless result[:side] == :first
 end
 
 run_test("parses all uppercase letters A-Z") do
   ("A".."Z").each do |letter|
     result = Sashite::Sin::Parser.parse(letter)
-    raise "wrong style for #{letter}" unless result[:style] == letter.to_sym
+    raise "wrong abbr for #{letter}" unless result[:abbr] == letter.to_sym
     raise "wrong side for #{letter}" unless result[:side] == :first
   end
 end
@@ -54,20 +54,20 @@ puts "Valid inputs - lowercase letters:"
 
 run_test("parses lowercase letter 'c'") do
   result = Sashite::Sin::Parser.parse("c")
-  raise "wrong style" unless result[:style] == :C
+  raise "wrong abbr" unless result[:abbr] == :C
   raise "wrong side" unless result[:side] == :second
 end
 
 run_test("parses lowercase letter 's'") do
   result = Sashite::Sin::Parser.parse("s")
-  raise "wrong style" unless result[:style] == :S
+  raise "wrong abbr" unless result[:abbr] == :S
   raise "wrong side" unless result[:side] == :second
 end
 
 run_test("parses all lowercase letters a-z") do
   ("a".."z").each do |letter|
     result = Sashite::Sin::Parser.parse(letter)
-    raise "wrong style for #{letter}" unless result[:style] == letter.upcase.to_sym
+    raise "wrong abbr for #{letter}" unless result[:abbr] == letter.upcase.to_sym
     raise "wrong side for #{letter}" unless result[:side] == :second
   end
 end
@@ -328,7 +328,7 @@ run_test("rejects array") do
 end
 
 run_test("rejects hash") do
-  raise "should be invalid" if Sashite::Sin::Parser.valid?({ style: :C })
+  raise "should be invalid" if Sashite::Sin::Parser.valid?({ abbr: :C })
 end
 
 run_test("rejects symbol") do
@@ -345,7 +345,7 @@ puts "Round-trip tests:"
 run_test("round-trip uppercase letters") do
   ("A".."Z").each do |letter|
     result = Sashite::Sin::Parser.parse(letter)
-    identifier = Sashite::Sin::Identifier.new(result.fetch(:style), result.fetch(:side))
+    identifier = Sashite::Sin::Identifier.new(result.fetch(:abbr), result.fetch(:side))
     raise "round-trip failed for #{letter}" unless identifier.to_s == letter
   end
 end
@@ -353,7 +353,7 @@ end
 run_test("round-trip lowercase letters") do
   ("a".."z").each do |letter|
     result = Sashite::Sin::Parser.parse(letter)
-    identifier = Sashite::Sin::Identifier.new(result.fetch(:style), result.fetch(:side))
+    identifier = Sashite::Sin::Identifier.new(result.fetch(:abbr), result.fetch(:side))
     raise "round-trip failed for #{letter}" unless identifier.to_s == letter
   end
 end

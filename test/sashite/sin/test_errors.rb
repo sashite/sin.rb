@@ -7,7 +7,7 @@ require_relative "../../../lib/sashite/sin/errors"
 def run_test(name)
   print "  #{name}... "
   yield
-  puts "✔"
+  puts "✓"
 rescue StandardError => e
   warn "✗ Failure: #{e.message}"
   warn "    #{e.backtrace.first}"
@@ -43,8 +43,8 @@ end
 puts
 puts "Validation error messages:"
 
-run_test("INVALID_STYLE is defined") do
-  raise "wrong value" unless Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE == "invalid style"
+run_test("INVALID_ABBR is defined") do
+  raise "wrong value" unless Sashite::Sin::Errors::Argument::Messages::INVALID_ABBR == "invalid abbr"
 end
 
 run_test("INVALID_SIDE is defined") do
@@ -93,8 +93,8 @@ run_test("MUST_BE_LETTER is frozen") do
   raise "should be frozen" unless Sashite::Sin::Errors::Argument::Messages::MUST_BE_LETTER.frozen?
 end
 
-run_test("INVALID_STYLE is frozen") do
-  raise "should be frozen" unless Sashite::Sin::Errors::Argument::Messages::INVALID_STYLE.frozen?
+run_test("INVALID_ABBR is frozen") do
+  raise "should be frozen" unless Sashite::Sin::Errors::Argument::Messages::INVALID_ABBR.frozen?
 end
 
 run_test("INVALID_SIDE is frozen") do

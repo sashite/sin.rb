@@ -17,9 +17,9 @@ module Sashite
   #
   # @example Parsing SIN strings
   #   sin = Sashite::Sin.parse("C")
-  #   sin.style  # => :C
-  #   sin.side   # => :first
-  #   sin.to_s   # => "C"
+  #   sin.abbr  # => :C
+  #   sin.side  # => :first
+  #   sin.to_s  # => "C"
   #
   # @example Creating identifiers directly
   #   sin = Sashite::Sin::Identifier.new(:C, :first)
@@ -39,17 +39,17 @@ module Sashite
     #
     # @example Parsing uppercase (first player)
     #   sin = Sashite::Sin.parse("C")
-    #   sin.style  # => :C
-    #   sin.side   # => :first
+    #   sin.abbr  # => :C
+    #   sin.side  # => :first
     #
     # @example Parsing lowercase (second player)
     #   sin = Sashite::Sin.parse("c")
-    #   sin.style  # => :C
-    #   sin.side   # => :second
+    #   sin.abbr  # => :C
+    #   sin.side  # => :second
     def self.parse(input)
       components = Parser.parse(input)
 
-      Identifier.new(components.fetch(:style), components.fetch(:side))
+      Identifier.new(components.fetch(:abbr), components.fetch(:side))
     end
 
     # Reports whether the input is a valid SIN string.
