@@ -11,15 +11,16 @@ module Sashite
     # - Abbr: the style abbreviation (A-Z as uppercase symbol)
     # - Side: the player side (:first or :second)
     #
-    # Instances are immutable (frozen after creation).
+    # All 52 possible instances are pre-instantiated and frozen at load time.
+    # Never construct directly — use {Sashite::Sin.parse}, {Sashite::Sin.safe_parse},
+    # or {Sashite::Sin.fetch} instead.
     #
-    # @example Creating identifiers
-    #   sin = Identifier.new(:C, :first)
-    #   sin = Identifier.new(:S, :second)
+    # @example Obtaining identifiers
+    #   Sashite::Sin.parse("C")           # => #<Sashite::Sin::Identifier C>
+    #   Sashite::Sin.fetch(:C, :first)    # => #<Sashite::Sin::Identifier C>
     #
-    # @example String conversion
-    #   Identifier.new(:C, :first).to_s   # => "C"
-    #   Identifier.new(:C, :second).to_s  # => "c"
+    # @example Identity guarantee (flyweight)
+    #   Sashite::Sin.parse("C").equal?(Sashite::Sin.fetch(:C, :first))  # => true
     #
     # @see https://sashite.dev/specs/sin/1.0.0/
     class Identifier
@@ -42,15 +43,16 @@ module Sashite
       # @return [Identifier] A new frozen Identifier instance
       # @raise [Errors::Argument] If any attribute is invalid
       #
-      # @example
-      #   Identifier.new(:C, :first)
-      #   Identifier.new(:S, :second)
+      # @api private
       def initialize(abbr, side)
         validate_abbr!(abbr)
         validate_side!(side)
 
         @abbr = abbr
         @side = side
+        @string = (side.equal?(:first) ? abbr.to_s : abbr.to_s.downcase).freeze
+        @hash = [abbr, side].hash
+        @inspect = "#<#{self.class} #{@string}>".freeze
 
         freeze
       end
@@ -61,18 +63,15 @@ module Sashite
 
       # Returns the SIN string representation.
       #
+      # Returns a pre-computed, frozen string — zero allocation per call.
+      #
       # @return [String] The single-character SIN string
       #
       # @example
-      #   Identifier.new(:C, :first).to_s   # => "C"
-      #   Identifier.new(:C, :second).to_s  # => "c"
+      #   Sashite::Sin.parse("C").to_s   # => "C"
+      #   Sashite::Sin.parse("c").to_s   # => "c"
       def to_s
-        base = String(abbr)
-
-        case side
-        when :first  then base.upcase
-        when :second then base.downcase
-        end
+        @string
       end
 
       # ========================================================================
@@ -84,7 +83,7 @@ module Sashite
       # @return [Boolean] true if first player
       #
       # @example
-      #   Identifier.new(:C, :first).first_player?  # => true
+      #   Sashite::Sin.parse("C").first_player?  # => true
       def first_player?
         side.equal?(:first)
       end
@@ -94,7 +93,7 @@ module Sashite
       # @return [Boolean] true if second player
       #
       # @example
-      #   Identifier.new(:C, :second).second_player?  # => true
+      #   Sashite::Sin.parse("c").second_player?  # => true
       def second_player?
         side.equal?(:second)
       end
@@ -109,8 +108,8 @@ module Sashite
       # @return [Boolean] true if same abbreviation
       #
       # @example
-      #   sin1 = Identifier.new(:C, :first)
-      #   sin2 = Identifier.new(:C, :second)
+      #   sin1 = Sashite::Sin.parse("C")
+      #   sin2 = Sashite::Sin.parse("c")
       #   sin1.same_abbr?(sin2)  # => true
       def same_abbr?(other)
         abbr.equal?(other.abbr)
@@ -122,8 +121,8 @@ module Sashite
       # @return [Boolean] true if same side
       #
       # @example
-      #   sin1 = Identifier.new(:C, :first)
-      #   sin2 = Identifier.new(:S, :first)
+      #   sin1 = Sashite::Sin.parse("C")
+      #   sin2 = Sashite::Sin.parse("S")
       #   sin1.same_side?(sin2)  # => true
       def same_side?(other)
         side.equal?(other.side)
@@ -135,36 +134,36 @@ module Sashite
 
       # Checks equality with another Identifier.
       #
+      # With the flyweight pool, equal identifiers are always the same object
+      # (i.e., == implies equal?). Value-based comparison is provided for
+      # correctness when comparing across different object sources.
+      #
       # @param other [Object] The object to compare
       # @return [Boolean] true if equal
       #
       # @example
-      #   sin1 = Identifier.new(:C, :first)
-      #   sin2 = Identifier.new(:C, :first)
-      #   sin1 == sin2  # => true
+      #   Sashite::Sin.parse("C") == Sashite::Sin.fetch(:C, :first)  # => true
       def ==(other)
-        return false unless self.class === other
-
-        abbr.equal?(other.abbr) && side.equal?(other.side)
+        equal?(other) || (self.class === other && abbr.equal?(other.abbr) && side.equal?(other.side))
       end
 
       alias eql? ==
 
-      # Returns a hash code for the Identifier.
+      # Returns a pre-computed hash code for the Identifier.
       #
       # @return [Integer] Hash code
       def hash
-        [abbr, side].hash
+        @hash
       end
 
-      # Returns an inspect string for the Identifier.
+      # Returns a pre-computed inspect string for the Identifier.
       #
       # @return [String] Inspect representation
       #
       # @example
-      #   Identifier.new(:C, :first).inspect  # => "#<Sashite::Sin::Identifier C>"
+      #   Sashite::Sin.parse("C").inspect  # => "#<Sashite::Sin::Identifier C>"
       def inspect
-        "#<#{self.class} #{self}>"
+        @inspect
       end
 
       private
@@ -184,6 +183,38 @@ module Sashite
 
         raise Errors::Argument, Errors::Argument::Messages::INVALID_SIDE
       end
+
+      # ========================================================================
+      # Flyweight Instance Pool
+      # ========================================================================
+
+      public
+
+      # Component-keyed pool: [abbr, side] → Identifier.
+      #
+      # Used by {Sashite::Sin.fetch} for direct lookup by structured components.
+      #
+      # @return [Hash{Array(Symbol, Symbol) => Identifier}]
+      POOL = {}.tap { |pool|
+        Constants::VALID_ABBRS.each do |abbr|
+          Constants::VALID_SIDES.each do |side|
+            pool[[abbr, side]] = new(abbr, side)
+          end
+        end
+      }.freeze
+
+      # Byte-keyed pool: ASCII byte → Identifier.
+      #
+      # Used by the parser for O(1) lookup from a validated byte.
+      # Returns nil for non-letter bytes, doubling as implicit validation.
+      #
+      # @return [Hash{Integer => Identifier}]
+      BYTE_POOL = {}.tap { |pool|
+        (0x41..0x5A).each { |b| pool[b] = POOL[[b.chr.to_sym, :first]] }
+        (0x61..0x7A).each { |b| pool[b] = POOL[[(b - 32).chr.to_sym, :second]] }
+      }.freeze
+
+      private_class_method :new
     end
   end
 end

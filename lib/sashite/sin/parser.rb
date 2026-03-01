@@ -1,18 +1,31 @@
 # frozen_string_literal: true
 
-require_relative "constants"
 require_relative "errors"
+require_relative "identifier"
 
 module Sashite
   module Sin
     # Parses SIN (Style Identifier Notation) strings.
     #
-    # The parser uses byte-level validation to ensure security against
-    # malformed input, Unicode lookalikes, and injection attacks.
+    # Implements a dual-path architecture for maximum performance:
+    #
+    # - {.safe_parse} validates and returns a cached Identifier or nil,
+    #   without ever raising or allocating exception objects.
+    # - {.parse} delegates to safe_parse and raises exactly once at the
+    #   API boundary on failure.
+    # - {.valid?} delegates to safe_parse and converts to boolean.
+    #
+    # All valid inputs resolve to a pre-instantiated flyweight Identifier
+    # via a single byte-indexed Hash lookup.
     #
     # @example Parsing a valid SIN string
-    #   Parser.parse("C")  # => { abbr: :C, side: :first }
-    #   Parser.parse("c")  # => { abbr: :C, side: :second }
+    #   Parser.parse("C")  # => #<Sashite::Sin::Identifier C>
+    #   Parser.parse("c")  # => #<Sashite::Sin::Identifier c>
+    #
+    # @example Safe parsing
+    #   Parser.safe_parse("C")   # => #<Sashite::Sin::Identifier C>
+    #   Parser.safe_parse("1")   # => nil
+    #   Parser.safe_parse(nil)   # => nil
     #
     # @example Validation
     #   Parser.valid?("C")   # => true
@@ -20,27 +33,44 @@ module Sashite
     #
     # @see https://sashite.dev/specs/sin/1.0.0/
     module Parser
-      # Parses a SIN string into its components.
+      # Parses a SIN string into a cached Identifier.
+      #
+      # Delegates to {.safe_parse} internally. On failure, raises a single
+      # ArgumentError with a descriptive message.
       #
       # @param input [String] The SIN string to parse
-      # @return [Hash] Hash with :abbr and :side keys
+      # @return [Identifier] A pre-instantiated, frozen Identifier
       # @raise [Errors::Argument] If the input is invalid
       #
       # @example
-      #   Parser.parse("C")  # => { abbr: :C, side: :first }
-      #   Parser.parse("s")  # => { abbr: :S, side: :second }
+      #   Parser.parse("C")  # => #<Sashite::Sin::Identifier C>
+      #   Parser.parse("s")  # => #<Sashite::Sin::Identifier s>
       def self.parse(input)
-        validate_input_type!(input)
-        validate_not_empty!(input)
-        validate_length!(input)
+        safe_parse(input) || raise(Errors::Argument, error_message_for(input))
+      end
 
-        byte = input.getbyte(0)
-        validate_letter!(byte)
+      # Parses a SIN string without raising.
+      #
+      # Returns a cached Identifier on success, nil on failure.
+      # Never allocates exception objects or captures backtraces.
+      #
+      # @param input [String] The string to parse
+      # @return [Identifier, nil] A cached Identifier, or nil if invalid
+      #
+      # @example
+      #   Parser.safe_parse("C")   # => #<Sashite::Sin::Identifier C>
+      #   Parser.safe_parse("")    # => nil
+      #   Parser.safe_parse(nil)   # => nil
+      def self.safe_parse(input)
+        return unless ::String === input
+        return unless input.bytesize == 1
 
-        extract_components(byte)
+        Identifier::BYTE_POOL[input.getbyte(0)]
       end
 
       # Reports whether the input is a valid SIN string.
+      #
+      # Never raises; returns false for any invalid input including non-String.
       #
       # @param input [String] The string to validate
       # @return [Boolean] true if valid, false otherwise
@@ -51,87 +81,20 @@ module Sashite
       #   Parser.valid?("")    # => false
       #   Parser.valid?("CC")  # => false
       def self.valid?(input)
-        parse(input)
-        true
-      rescue Errors::Argument
-        false
+        !safe_parse(input).nil?
       end
 
-      # @!group Private Class Methods
-
-      # Validates that input is a String.
+      # Determines the appropriate error message for an invalid input.
       #
-      # @param input [Object] The input to validate
-      # @raise [Errors::Argument] If input is not a String
-      # @return [void]
-      private_class_method def self.validate_input_type!(input)
-        return if ::String === input
+      # @param input [Object] The invalid input
+      # @return [String] A descriptive error message
+      private_class_method def self.error_message_for(input)
+        return Errors::Argument::Messages::MUST_BE_LETTER unless ::String === input
+        return Errors::Argument::Messages::EMPTY_INPUT    if input.empty?
+        return Errors::Argument::Messages::INPUT_TOO_LONG if input.bytesize > 1
 
-        raise Errors::Argument, Errors::Argument::Messages::MUST_BE_LETTER
+        Errors::Argument::Messages::MUST_BE_LETTER
       end
-
-      # Validates that input is not empty.
-      #
-      # @param input [String] The input to validate
-      # @raise [Errors::Argument] If input is empty
-      # @return [void]
-      private_class_method def self.validate_not_empty!(input)
-        return unless input.empty?
-
-        raise Errors::Argument, Errors::Argument::Messages::EMPTY_INPUT
-      end
-
-      # Validates that input does not exceed maximum length.
-      #
-      # @param input [String] The input to validate
-      # @raise [Errors::Argument] If input exceeds maximum length
-      # @return [void]
-      private_class_method def self.validate_length!(input)
-        return if input.bytesize <= Constants::MAX_STRING_LENGTH
-
-        raise Errors::Argument, Errors::Argument::Messages::INPUT_TOO_LONG
-      end
-
-      # Validates that byte is an ASCII letter.
-      #
-      # @param byte [Integer] The byte to validate
-      # @raise [Errors::Argument] If byte is not a letter
-      # @return [void]
-      private_class_method def self.validate_letter!(byte)
-        return if uppercase_letter?(byte) || lowercase_letter?(byte)
-
-        raise Errors::Argument, Errors::Argument::Messages::MUST_BE_LETTER
-      end
-
-      # Extracts abbr and side from a validated byte.
-      #
-      # @param byte [Integer] A validated ASCII letter byte
-      # @return [Hash] Hash with :abbr and :side keys
-      private_class_method def self.extract_components(byte)
-        if uppercase_letter?(byte)
-          { abbr: byte.chr.to_sym, side: :first }
-        else
-          { abbr: byte.chr.upcase.to_sym, side: :second }
-        end
-      end
-
-      # Reports whether byte is an uppercase ASCII letter (A-Z).
-      #
-      # @param byte [Integer] The byte to check
-      # @return [Boolean] true if A-Z
-      private_class_method def self.uppercase_letter?(byte)
-        byte >= 0x41 && byte <= 0x5A
-      end
-
-      # Reports whether byte is a lowercase ASCII letter (a-z).
-      #
-      # @param byte [Integer] The byte to check
-      # @return [Boolean] true if a-z
-      private_class_method def self.lowercase_letter?(byte)
-        byte >= 0x61 && byte <= 0x7A
-      end
-
-      # @!endgroup
     end
   end
 end

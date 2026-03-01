@@ -4,13 +4,8 @@ module Sashite
   module Sin
     # Constants for the SIN (Style Identifier Notation) specification.
     #
-    # Defines valid values for abbreviations and sides, as well as formatting constants.
-    #
-    # @example Accessing valid abbreviations
-    #   Constants::VALID_ABBRS  # => [:A, :B, ..., :Z]
-    #
-    # @example Accessing valid sides
-    #   Constants::VALID_SIDES  # => [:first, :second]
+    # Provides public-facing domain constants and pre-computed lookup tables
+    # used internally for zero-allocation parsing.
     #
     # @see https://sashite.dev/specs/sin/1.0.0/
     module Constants
@@ -24,15 +19,38 @@ module Sashite
       # @return [Array<Symbol>] Array of valid side symbols
       VALID_SIDES = %i[first second].freeze
 
-      # Maximum length of a valid SIN string.
+      # Pre-computed byte → uppercase Symbol lookup table.
       #
-      # @return [Integer] Maximum string length (1)
-      MAX_STRING_LENGTH = 1
+      # Maps every valid ASCII letter byte (A-Z, a-z) to its uppercase Symbol
+      # abbreviation. Used by the parser for O(1) extraction with no intermediate
+      # String allocation.
+      #
+      # @example
+      #   BYTE_TO_ABBR[0x43]  # => :C  (byte for 'C')
+      #   BYTE_TO_ABBR[0x63]  # => :C  (byte for 'c')
+      #   BYTE_TO_ABBR[0x31]  # => nil  (byte for '1')
+      #
+      # @return [Hash{Integer => Symbol}] Frozen byte-to-symbol mapping
+      BYTE_TO_ABBR = {}.tap { |h|
+        (0x41..0x5A).each { |b| h[b] = b.chr.to_sym }
+        (0x61..0x7A).each { |b| h[b] = (b - 32).chr.to_sym }
+      }.freeze
 
-      # Empty string constant for internal use.
+      # Pre-computed byte → side lookup table.
       #
-      # @return [String] Empty string
-      EMPTY_STRING = ""
+      # Maps every valid ASCII letter byte to its corresponding side.
+      # Uppercase letters map to :first, lowercase to :second.
+      #
+      # @example
+      #   BYTE_TO_SIDE[0x43]  # => :first   (byte for 'C')
+      #   BYTE_TO_SIDE[0x63]  # => :second  (byte for 'c')
+      #   BYTE_TO_SIDE[0x31]  # => nil      (byte for '1')
+      #
+      # @return [Hash{Integer => Symbol}] Frozen byte-to-side mapping
+      BYTE_TO_SIDE = {}.tap { |h|
+        (0x41..0x5A).each { |b| h[b] = :first }
+        (0x61..0x7A).each { |b| h[b] = :second }
+      }.freeze
     end
   end
 end
